@@ -1,16 +1,51 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { AnnouncementBar } from "@/components/sales/AnnouncementBar";
+import { Nav } from "@/components/sales/Nav";
+import { Hero } from "@/components/sales/Hero";
+import { TrustBadges } from "@/components/sales/TrustBadges";
+import { PainMatrix } from "@/components/sales/PainMatrix";
+import { ProductGrid } from "@/components/sales/ProductGrid";
+import { SocialProof } from "@/components/sales/SocialProof";
+import { UrgencyStrip } from "@/components/sales/UrgencyStrip";
+import { Reseller } from "@/components/sales/Reseller";
+import { FAQ } from "@/components/sales/FAQ";
+import { AdminDashboard } from "@/components/sales/AdminDashboard";
+import { Footer } from "@/components/sales/Footer";
+import { CheckoutModal } from "@/components/sales/CheckoutModal";
+import { WelcomeOnboarding } from "@/components/sales/WelcomeOnboarding";
+import type { Product } from "@/data/products";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const Index = () => {
+  const [checkout, setCheckout] = useState<Product | null>(null);
+  const [welcome, setWelcome] = useState<Product | null>(null);
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="min-h-screen bg-background text-foreground">
+      <AnnouncementBar />
+      <Nav />
+      <main>
+        <Hero />
+        <TrustBadges />
+        <PainMatrix />
+        <ProductGrid onBuy={setCheckout} />
+        <UrgencyStrip />
+        <SocialProof />
+        <Reseller />
+        <FAQ />
+        <AdminDashboard />
+      </main>
+      <Footer />
+
+      {checkout && (
+        <CheckoutModal
+          product={checkout}
+          onClose={() => setCheckout(null)}
+          onPaid={(p) => { setCheckout(null); setWelcome(p); }}
+        />
+      )}
+      {welcome && <WelcomeOnboarding product={welcome} onClose={() => setWelcome(null)} />}
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
