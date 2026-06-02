@@ -7,31 +7,37 @@ export const ProductGrid = ({ onBuy }: Props) => {
     <section id="products" className="relative py-24">
       <div className="container">
         <div className="mx-auto max-w-2xl text-center">
-          <div className="text-xs uppercase tracking-[0.35em] text-gold">The Collection</div>
-          <h2 className="mt-3 font-display text-4xl font-bold md:text-5xl">
-            Elite <span className="gold-text">Fitness Infrastructure</span>
+          <div className="text-xs uppercase tracking-[0.4em] text-gold">// The Collection</div>
+          <h2 className="mt-4 font-display text-3xl font-bold md:text-5xl">
+            ELITE <span className="gold-text">FITNESS INFRASTRUCTURE</span>
           </h2>
-          <p className="mt-4 text-foreground/65">
-            Every unit ships with launch discount automatically applied. Use code{" "}
-            <span className="font-mono text-gold">RESO22</span> at checkout.
+          <p className="mt-5 text-sm text-foreground/65">
+            Static catalog · NGN pricing · SKU-mapped to live payment rails.
           </p>
         </div>
 
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
           {PRODUCTS.map((p) => {
-            const discount = Math.round((1 - p.now / p.was) * 100);
+            const discount = p.was > p.now ? Math.round((1 - p.now / p.was) * 100) : 0;
             return (
               <article
                 key={p.id}
-                className={`relative flex flex-col overflow-hidden rounded-2xl transition duration-500 hover:-translate-y-2 ${
+                data-handle={p.handle}
+                data-sku={p.sku}
+                className={`relative flex flex-col overflow-hidden transition duration-500 hover:-translate-y-1 ${
                   p.popular
                     ? "gold-border-glow bg-gradient-to-b from-noir-800 to-noir-900 animate-glow-pulse"
                     : "glass-panel hover:border-gold/60"
                 }`}
               >
                 {p.popular && (
-                  <span className="absolute top-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-gradient-gold px-4 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-noir-900 shadow-gold">
-                    <i className="fa-solid fa-crown mr-1.5" /> Most Popular
+                  <span className="absolute top-3 left-1/2 z-20 -translate-x-1/2 bg-gradient-gold px-4 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-noir-900 shadow-gold">
+                    ★ Most Popular
+                  </span>
+                )}
+                {p.free && (
+                  <span className="absolute top-3 right-3 z-20 border border-gold/60 bg-noir-950/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-gold">
+                    Bonus
                   </span>
                 )}
 
@@ -45,44 +51,60 @@ export const ProductGrid = ({ onBuy }: Props) => {
                     decoding="async"
                     className="h-full w-full object-cover transition duration-700 hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-noir-900 via-transparent to-transparent" />
-                  <span className="absolute bottom-3 right-3 rounded-full border border-destructive/40 bg-noir-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-destructive backdrop-blur">
-                    -{discount}% Off
-                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-noir-900 via-noir-900/20 to-transparent" />
+                  {discount > 0 && (
+                    <span className="absolute bottom-3 right-3 border border-destructive/50 bg-noir-950/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-destructive backdrop-blur">
+                      -{discount}%
+                    </span>
+                  )}
                 </div>
 
-                <div className="flex flex-col p-7 pt-5">
+                <div className="flex flex-1 flex-col p-6">
+                  <div className="text-[10px] uppercase tracking-[0.3em] text-foreground/45">
+                    SKU · {p.sku}
+                  </div>
+                  <h3 className="mt-2 font-display text-lg font-bold leading-tight">{p.name}</h3>
+                  <p className="mt-1.5 text-xs text-foreground/55">{p.tagline}</p>
 
-                <h3 className="mt-5 font-display text-xl font-bold leading-tight">{p.name}</h3>
-                <p className="mt-1.5 text-sm text-foreground/55">{p.tagline}</p>
+                  <ul className="mt-4 space-y-1.5 text-xs text-foreground/75">
+                    {p.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2">
+                        <span className="mt-1 inline-block h-1.5 w-1.5 shrink-0 bg-gold" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
 
-                <ul className="mt-5 space-y-2 text-sm text-foreground/75">
-                  {p.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2.5">
-                      <i className="fa-solid fa-check mt-1 text-gold text-xs" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
+                  <div className="mt-auto pt-5">
+                    <div className="flex items-end gap-3">
+                      <div className="font-display text-xl font-bold gold-text">{p.priceLabel}</div>
+                      {discount > 0 && (
+                        <div className="mb-1 text-xs text-foreground/40 line-through">{NGN(p.was)}</div>
+                      )}
+                    </div>
 
-                <div className="mt-6 flex items-end gap-3">
-                  <div className="font-display text-3xl font-bold gold-text">{NGN(p.now)}</div>
-                  <div className="mb-1 text-sm text-foreground/40 line-through">{NGN(p.was)}</div>
-                </div>
-
-                <button
-                  onClick={() => onBuy(p)}
-                  className="luxury-button mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm"
-                >
-                  <i className="fa-solid fa-lock" /> Secure Checkout
-                </button>
-                <a
-                  href={`https://wa.me/2348000000000?text=I%20want%20to%20order%20${encodeURIComponent(p.name)}`}
-                  target="_blank" rel="noreferrer"
-                  className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl border border-gold/30 px-5 py-3 text-sm text-gold hover:bg-noir-700"
-                >
-                  <i className="fa-brands fa-whatsapp" /> Order via WhatsApp
-                </a>
+                    {p.free ? (
+                      <div className="mt-5 border border-gold/40 px-4 py-3 text-center text-[11px] uppercase tracking-[0.25em] text-gold/90">
+                        Auto-unlocked at checkout
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => onBuy(p)}
+                          className="luxury-button mt-5 inline-flex w-full items-center justify-center gap-2 px-5 py-3 text-[11px]"
+                        >
+                          <i className="fa-solid fa-lock" /> Secure Checkout
+                        </button>
+                        <a
+                          href={`https://wa.me/2348000000000?text=I%20want%20to%20order%20${encodeURIComponent(p.name)}%20(${p.sku})`}
+                          target="_blank" rel="noreferrer"
+                          className="mt-2 inline-flex w-full items-center justify-center gap-2 border border-gold/30 px-5 py-2.5 text-[11px] uppercase tracking-[0.2em] text-gold hover:bg-noir-700"
+                        >
+                          <i className="fa-brands fa-whatsapp" /> WhatsApp
+                        </a>
+                      </>
+                    )}
+                  </div>
                 </div>
               </article>
             );
