@@ -23,26 +23,35 @@ export const ProductGrid = ({ onBuy }: Props) => {
             return (
               <article
                 key={p.id}
-                className={`relative flex flex-col rounded-2xl p-7 transition duration-500 hover:-translate-y-2 ${
+                className={`relative flex flex-col overflow-hidden rounded-2xl transition duration-500 hover:-translate-y-2 ${
                   p.popular
                     ? "gold-border-glow bg-gradient-to-b from-noir-800 to-noir-900 animate-glow-pulse"
                     : "glass-panel hover:border-gold/60"
                 }`}
               >
                 {p.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-gold px-4 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-noir-900 shadow-gold">
+                  <span className="absolute top-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-gradient-gold px-4 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-noir-900 shadow-gold">
                     <i className="fa-solid fa-crown mr-1.5" /> Most Popular
                   </span>
                 )}
 
-                <div className="flex items-center justify-between">
-                  <span className="grid h-12 w-12 place-items-center rounded-xl bg-noir-700 text-gold border border-gold/30">
-                    <i className={`fa-solid ${p.icon} text-lg`} />
-                  </span>
-                  <span className="rounded-full border border-destructive/40 bg-destructive/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-destructive">
+                <div className="relative aspect-[4/3] overflow-hidden bg-noir-900">
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    width={1024}
+                    height={768}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover transition duration-700 hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-noir-900 via-transparent to-transparent" />
+                  <span className="absolute bottom-3 right-3 rounded-full border border-destructive/40 bg-noir-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-destructive backdrop-blur">
                     -{discount}% Off
                   </span>
                 </div>
+
+                <div className="flex flex-col p-7 pt-5">
 
                 <h3 className="mt-5 font-display text-xl font-bold leading-tight">{p.name}</h3>
                 <p className="mt-1.5 text-sm text-foreground/55">{p.tagline}</p>
@@ -74,6 +83,7 @@ export const ProductGrid = ({ onBuy }: Props) => {
                 >
                   <i className="fa-brands fa-whatsapp" /> Order via WhatsApp
                 </a>
+                </div>
               </article>
             );
           })}

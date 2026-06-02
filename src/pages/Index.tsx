@@ -3,6 +3,7 @@ import { AnnouncementBar } from "@/components/sales/AnnouncementBar";
 import { Nav } from "@/components/sales/Nav";
 import { Hero } from "@/components/sales/Hero";
 import { TrustBadges } from "@/components/sales/TrustBadges";
+import { TrustAuthority } from "@/components/sales/TrustAuthority";
 import { PainMatrix } from "@/components/sales/PainMatrix";
 import { ProductGrid } from "@/components/sales/ProductGrid";
 import { SocialProof } from "@/components/sales/SocialProof";
@@ -26,6 +27,7 @@ const Index = () => {
       <main>
         <Hero />
         <TrustBadges />
+        <TrustAuthority />
         <PainMatrix />
         <ProductGrid onBuy={setCheckout} />
         <UrgencyStrip />
