@@ -20,7 +20,7 @@ export const WelcomeOnboarding = ({ product, onClose }: Props) => {
           <div className="mt-5 text-[10px] uppercase tracking-[0.35em] text-gold">Welcome to the Elite Circle</div>
           <h3 className="mt-2 font-display text-3xl font-bold">Your Order is Confirmed</h3>
           <p className="mt-2 text-sm text-foreground/65">
-            {product.name} — {NGN(product.now)}. A welcome email is on its way with delivery & onboarding details.
+            {product.name} — {product.priceLabel}. A welcome email is on its way with delivery & onboarding details.
           </p>
         </div>
 
