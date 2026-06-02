@@ -83,6 +83,7 @@ export const ProductGrid = ({ onBuy }: Props) => {
                 >
                   <i className="fa-brands fa-whatsapp" /> Order via WhatsApp
                 </a>
+                </div>
               </article>
             );
           })}
