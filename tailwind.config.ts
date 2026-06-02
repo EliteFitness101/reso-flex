@@ -8,8 +8,9 @@ export default {
     container: { center: true, padding: "1.25rem", screens: { "2xl": "1400px" } },
     extend: {
       fontFamily: {
-        display: ['"Playfair Display"', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['"Space Mono"', 'ui-monospace', 'monospace'],
+        sans: ['"Space Mono"', 'ui-monospace', 'monospace'],
+        mono: ['"Space Mono"', 'ui-monospace', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",
