@@ -1,20 +1,25 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { AnnouncementBar } from "@/components/sales/AnnouncementBar";
 import { Nav } from "@/components/sales/Nav";
-import { Hero } from "@/components/sales/Hero";
+import { HeroCarousel } from "@/components/sales/HeroCarousel";
 import { TrustBadges } from "@/components/sales/TrustBadges";
-import { TrustAuthority } from "@/components/sales/TrustAuthority";
-import { PainMatrix } from "@/components/sales/PainMatrix";
 import { ProductGrid } from "@/components/sales/ProductGrid";
-import { SocialProof } from "@/components/sales/SocialProof";
-import { UrgencyStrip } from "@/components/sales/UrgencyStrip";
-import { Reseller } from "@/components/sales/Reseller";
-import { FAQ } from "@/components/sales/FAQ";
-import { AdminDashboard } from "@/components/sales/AdminDashboard";
-import { Footer } from "@/components/sales/Footer";
-import { CheckoutModal } from "@/components/sales/CheckoutModal";
-import { WelcomeOnboarding } from "@/components/sales/WelcomeOnboarding";
+import { LazySection } from "@/components/sales/LazySection";
+import { MusicBubble } from "@/components/sales/MusicBubble";
 import type { Product } from "@/data/products";
+
+// Below-the-fold: code-split + IntersectionObserver gated
+const TrustAuthority = lazy(() => import("@/components/sales/TrustAuthority").then(m => ({ default: m.TrustAuthority })));
+const PainMatrix = lazy(() => import("@/components/sales/PainMatrix").then(m => ({ default: m.PainMatrix })));
+const UrgencyStrip = lazy(() => import("@/components/sales/UrgencyStrip").then(m => ({ default: m.UrgencyStrip })));
+const SocialProof = lazy(() => import("@/components/sales/SocialProof").then(m => ({ default: m.SocialProof })));
+const NaijaFitRev = lazy(() => import("@/components/sales/NaijaFitRev").then(m => ({ default: m.NaijaFitRev })));
+const Reseller = lazy(() => import("@/components/sales/Reseller").then(m => ({ default: m.Reseller })));
+const FAQ = lazy(() => import("@/components/sales/FAQ").then(m => ({ default: m.FAQ })));
+const AdminDashboard = lazy(() => import("@/components/sales/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
+const Footer = lazy(() => import("@/components/sales/Footer").then(m => ({ default: m.Footer })));
+const CheckoutModal = lazy(() => import("@/components/sales/CheckoutModal").then(m => ({ default: m.CheckoutModal })));
+const WelcomeOnboarding = lazy(() => import("@/components/sales/WelcomeOnboarding").then(m => ({ default: m.WelcomeOnboarding })));
 
 const Index = () => {
   const [checkout, setCheckout] = useState<Product | null>(null);
@@ -25,27 +30,44 @@ const Index = () => {
       <AnnouncementBar />
       <Nav />
       <main>
-        <Hero />
+        {/* Above-the-fold: eagerly rendered for sub-3s Equipment Store visibility */}
+        <HeroCarousel />
         <TrustBadges />
-        <TrustAuthority />
-        <PainMatrix />
         <ProductGrid onBuy={setCheckout} />
-        <UrgencyStrip />
-        <SocialProof />
-        <Reseller />
-        <FAQ />
-        <AdminDashboard />
+
+        {/* Below-the-fold: lazy + IO-gated, with force-mount fallback */}
+        <LazySection forceAfterMs={2500} minHeight={300}>
+          <Suspense fallback={null}><TrustAuthority /></Suspense>
+        </LazySection>
+        <LazySection><Suspense fallback={null}><PainMatrix /></Suspense></LazySection>
+        <LazySection><Suspense fallback={null}><UrgencyStrip /></Suspense></LazySection>
+        <LazySection><Suspense fallback={null}><SocialProof /></Suspense></LazySection>
+        <LazySection><Suspense fallback={null}><NaijaFitRev /></Suspense></LazySection>
+        <LazySection><Suspense fallback={null}><Reseller /></Suspense></LazySection>
+        <LazySection><Suspense fallback={null}><FAQ /></Suspense></LazySection>
+        <LazySection><Suspense fallback={null}><AdminDashboard /></Suspense></LazySection>
       </main>
-      <Footer />
+
+      <LazySection minHeight={120}>
+        <Suspense fallback={null}><Footer /></Suspense>
+      </LazySection>
+
+      <MusicBubble />
 
       {checkout && (
-        <CheckoutModal
-          product={checkout}
-          onClose={() => setCheckout(null)}
-          onPaid={(p) => { setCheckout(null); setWelcome(p); }}
-        />
+        <Suspense fallback={null}>
+          <CheckoutModal
+            product={checkout}
+            onClose={() => setCheckout(null)}
+            onPaid={(p) => { setCheckout(null); setWelcome(p); }}
+          />
+        </Suspense>
       )}
-      {welcome && <WelcomeOnboarding product={welcome} onClose={() => setWelcome(null)} />}
+      {welcome && (
+        <Suspense fallback={null}>
+          <WelcomeOnboarding product={welcome} onClose={() => setWelcome(null)} />
+        </Suspense>
+      )}
     </div>
   );
 };
