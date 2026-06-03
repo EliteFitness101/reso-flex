@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState } from "react";
 import { AnnouncementBar } from "@/components/sales/AnnouncementBar";
 import { Nav } from "@/components/sales/Nav";
+import { TrustFloatBadge } from "@/components/sales/TrustFloatBadge";
 import { HeroCarousel } from "@/components/sales/HeroCarousel";
 import { TrustBadges } from "@/components/sales/TrustBadges";
 import { ProductGrid } from "@/components/sales/ProductGrid";
@@ -31,6 +32,7 @@ const Index = () => {
       <Nav />
       <main>
         {/* Above-the-fold: eagerly rendered for sub-3s Equipment Store visibility */}
+        <TrustFloatBadge />
         <HeroCarousel />
         <TrustBadges />
         <ProductGrid onBuy={setCheckout} />
