@@ -16,7 +16,7 @@ const SocialProof = lazy(() => import("@/components/sales/SocialProof").then(m =
 const NaijaFitRev = lazy(() => import("@/components/sales/NaijaFitRev").then(m => ({ default: m.NaijaFitRev })));
 const Reseller = lazy(() => import("@/components/sales/Reseller").then(m => ({ default: m.Reseller })));
 const FAQ = lazy(() => import("@/components/sales/FAQ").then(m => ({ default: m.FAQ })));
-const AdminDashboard = lazy(() => import("@/components/sales/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
+
 const Footer = lazy(() => import("@/components/sales/Footer").then(m => ({ default: m.Footer })));
 const CheckoutModal = lazy(() => import("@/components/sales/CheckoutModal").then(m => ({ default: m.CheckoutModal })));
 const WelcomeOnboarding = lazy(() => import("@/components/sales/WelcomeOnboarding").then(m => ({ default: m.WelcomeOnboarding })));
@@ -45,7 +45,7 @@ const Index = () => {
         <LazySection><Suspense fallback={null}><NaijaFitRev /></Suspense></LazySection>
         <LazySection><Suspense fallback={null}><Reseller /></Suspense></LazySection>
         <LazySection><Suspense fallback={null}><FAQ /></Suspense></LazySection>
-        <LazySection><Suspense fallback={null}><AdminDashboard /></Suspense></LazySection>
+        
       </main>
 
       <LazySection minHeight={120}>

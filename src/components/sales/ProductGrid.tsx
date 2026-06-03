@@ -52,6 +52,14 @@ export const ProductGrid = ({ onBuy }: Props) => {
                     className="h-full w-full object-cover transition duration-700 hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-noir-900 via-noir-900/20 to-transparent" />
+                  {/* Laser-etched brand overlay */}
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute bottom-2 right-3 select-none font-display text-2xl font-black uppercase tracking-[0.2em] text-foreground/[0.07] mix-blend-overlay"
+                    style={{ WebkitTextStroke: "0.5px hsl(var(--gold) / 0.3)" }}
+                  >
+                    Reso22
+                  </span>
                   {discount > 0 && (
                     <span className="absolute bottom-3 right-3 border border-destructive/50 bg-noir-950/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-destructive backdrop-blur">
                       -{discount}%

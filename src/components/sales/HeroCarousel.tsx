@@ -86,6 +86,14 @@ export const HeroCarousel = () => {
                   }`}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-noir-900 via-noir-900/30 to-transparent" />
+                {/* Laser-etched brand overlay */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute bottom-4 right-5 select-none font-display text-[10vw] font-black uppercase tracking-[0.18em] text-foreground/[0.06] mix-blend-overlay sm:text-[64px]"
+                  style={{ WebkitTextStroke: "1px hsl(var(--gold) / 0.25)", textShadow: "0 0 1px hsl(var(--gold) / 0.15)" }}
+                >
+                  ResoFlex
+                </span>
               </div>
             ))}
           </div>
