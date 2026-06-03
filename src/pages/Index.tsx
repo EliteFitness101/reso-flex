@@ -32,6 +32,7 @@ const Index = () => {
       <Nav />
       <main>
         {/* Above-the-fold: eagerly rendered for sub-3s Equipment Store visibility */}
+        <TrustFloatBadge />
         <HeroCarousel />
         <TrustBadges />
         <ProductGrid onBuy={setCheckout} />
