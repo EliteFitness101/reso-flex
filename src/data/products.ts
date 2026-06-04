@@ -2,6 +2,10 @@ import rfExpBlue from "@/assets/products/rf-exp-blue.jpg";
 import rfExpDuo from "@/assets/products/rf-exp-duo.jpg";
 import rfCoach30 from "@/assets/products/rf-coach-30.jpg";
 import rfBlueprint90 from "@/assets/products/rf-blueprint-90.jpg";
+import b2kStarter from "@/assets/products/b2k-starter.jpg";
+import b2kCore from "@/assets/products/b2k-core.jpg";
+import b2kPro from "@/assets/products/b2k-pro.jpg";
+import b2kElite from "@/assets/products/b2k-elite.jpg";
 
 export type Product = {
   id: string;
