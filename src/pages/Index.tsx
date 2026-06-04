@@ -7,6 +7,7 @@ import { TrustBadges } from "@/components/sales/TrustBadges";
 import { ProductGrid } from "@/components/sales/ProductGrid";
 import { LazySection } from "@/components/sales/LazySection";
 import { MusicBubble } from "@/components/sales/MusicBubble";
+import { ChatBubble } from "@/components/sales/ChatBubble";
 import type { Product } from "@/data/products";
 
 // Below-the-fold: code-split + IntersectionObserver gated
