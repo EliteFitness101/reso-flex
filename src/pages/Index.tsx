@@ -56,6 +56,7 @@ const Index = () => {
       </LazySection>
 
       <MusicBubble />
+      <ChatBubble />
 
       {checkout && (
         <Suspense fallback={null}>
