@@ -113,16 +113,23 @@ export const HeroCarousel = () => {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
           <a href="#products" className="luxury-button inline-flex items-center gap-2 rounded-full px-8 py-4 text-sm shimmer">
-            <i className="fa-solid fa-cart-shopping" /> Shop the Collection
+            <i className="fa-solid fa-cart-shopping" /> Buy / Checkout
           </a>
           <a
-            href="https://wa.me/2348000000000?text=I'd%20like%20a%20ResoFlex%20advisor"
+            href="https://reso-fit.lovable.app"
             target="_blank" rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-full border border-gold/50 bg-noir-800/60 px-8 py-4 text-sm font-semibold text-gold backdrop-blur transition hover:bg-noir-700"
           >
-            <i className="fa-brands fa-whatsapp text-lg" /> WhatsApp Advisor
+            <i className="fa-solid fa-clipboard-check" /> Free Assessment
+          </a>
+          <a
+            href="https://joy-funnel-ai.lovable.app"
+            target="_blank" rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-noir-800/40 px-8 py-4 text-sm font-semibold text-foreground/85 backdrop-blur transition hover:border-gold/40 hover:text-gold"
+          >
+            <i className="fa-solid fa-dumbbell" /> Explore Programs
           </a>
         </div>
 
