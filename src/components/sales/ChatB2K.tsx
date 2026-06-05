@@ -1,92 +1,205 @@
 import { useEffect, useRef, useState } from "react";
+import { track } from "@/lib/track";
 
 const WA_URL =
   "https://wa.me/2348132255842?text=" +
   encodeURIComponent("Hi, I want help choosing my ResoFlex plan or equipment");
 
-type Msg = { role: "user" | "bot"; text: string; cta?: { label: string; href: string }[] };
+type CTA = { label: string; href: string; event?: string };
+type Msg = { role: "user" | "bot"; text: string; cta?: CTA[]; options?: Option[] };
+type Option = { label: string; next: string };
 
-const QUICK = [
-  "Recommend a treadmill",
-  "B2K plan for fat loss",
-  "Best home setup under ₦300k",
-  "Talk to a human",
-];
+// =========================================================================
+// Structured decision tree — guides the user from goal → fitness level →
+// constraint → personalized B2K plan + equipment bundle recommendation.
+// =========================================================================
+type Node = {
+  text: string;
+  options?: Option[];
+  cta?: CTA[];
+};
 
-// Lightweight decision-tree "ChatB2K" — luxury, Naija-first, conversion-focused.
-function answer(input: string): Msg {
+const TREE: Record<string, Node> = {
+  root: {
+    text: "What's your #1 goal right now? I'll match you to the right B2K plan + equipment in 3 quick taps.",
+    options: [
+      { label: "🔥 Fat loss", next: "goal_fat" },
+      { label: "🍑 Glute / curve growth", next: "goal_curve" },
+      { label: "💪 Build strength", next: "goal_strength" },
+      { label: "❤️ Cardio & wellness", next: "goal_cardio" },
+    ],
+  },
+
+  // ---------- FAT LOSS ----------
+  goal_fat: {
+    text: "Got it — fat loss. What's your current fitness level?",
+    options: [
+      { label: "Beginner (0–3 mo)", next: "fat_beginner" },
+      { label: "Intermediate", next: "fat_intermediate" },
+      { label: "Advanced", next: "fat_advanced" },
+    ],
+  },
+  fat_beginner: {
+    text: "Perfect starting point. Your space constraint?",
+    options: [
+      { label: "Small apartment", next: "rec_walkingpad_b2kcore" },
+      { label: "Full home gym room", next: "rec_treadmill25_b2kcore" },
+    ],
+  },
+  fat_intermediate: {
+    text: "Nice. Pick your budget tier:",
+    options: [
+      { label: "Under ₦300k", next: "rec_walkingpad_b2kpro" },
+      { label: "₦300k–₦700k", next: "rec_treadmill3_b2kpro" },
+      { label: "Premium ₦700k+", next: "rec_treadmill4_b2kelite" },
+    ],
+  },
+  fat_advanced: {
+    text: "Elite track. Cardio preference?",
+    options: [
+      { label: "Running", next: "rec_treadmill4_b2kelite" },
+      { label: "Spin / HIIT", next: "rec_spin_b2kelite" },
+    ],
+  },
+
+  // ---------- CURVE / GLUTE ----------
+  goal_curve: {
+    text: "Love it — glute & curve focus. Where are you starting?",
+    options: [
+      { label: "Beginner", next: "rec_b2kstarter" },
+      { label: "Some training history", next: "rec_b2kcore" },
+      { label: "Advanced sculpt", next: "rec_b2kelite_full" },
+    ],
+  },
+
+  // ---------- STRENGTH ----------
+  goal_strength: {
+    text: "Strength build — do you want cardio paired with it?",
+    options: [
+      { label: "Yes, conditioning", next: "rec_treadmill3_b2kpro" },
+      { label: "No, just coaching", next: "rec_b2kpro_only" },
+    ],
+  },
+
+  // ---------- CARDIO / WELLNESS ----------
+  goal_cardio: {
+    text: "Wellness cardio — daily time you can give?",
+    options: [
+      { label: "15–30 min", next: "rec_walkingpad_b2kstarter" },
+      { label: "45+ min", next: "rec_treadmill25_b2kcore" },
+    ],
+  },
+
+  // =================== RECOMMENDATIONS (LEAF NODES) ===================
+  rec_walkingpad_b2kcore: {
+    text:
+      "✅ My pick: **ResoFlex Walking Pad + B2K Core**. Compact, NEPA-safe, 10k steps daily — paired with the Core curve & nutrition system. Total ≈ ₦280k.",
+    cta: [
+      { label: "View Bundle", href: "#products" },
+      { label: "Free Assessment", href: "https://reso-fit.lovable.app", event: "assessment_click" },
+      { label: "Restart", href: "#restart" },
+    ],
+  },
+  rec_walkingpad_b2kpro: {
+    text:
+      "✅ Pick: **Walking Pad + B2K Pro**. Sustainable fat loss with priority coach support. Total ≈ ₦295k.",
+    cta: [
+      { label: "View Bundle", href: "#products" },
+      { label: "Talk to Coach", href: WA_URL, event: "whatsapp_click" },
+      { label: "Restart", href: "#restart" },
+    ],
+  },
+  rec_walkingpad_b2kstarter: {
+    text:
+      "✅ Pick: **Walking Pad + B2K Starter**. Easy entry — daily walking + foundational guidance. Total ≈ ₦255k.",
+    cta: [
+      { label: "View Bundle", href: "#products" },
+      { label: "Restart", href: "#restart" },
+    ],
+  },
+  rec_treadmill25_b2kcore: {
+    text:
+      "✅ Pick: **ResoFlex 2.5HP + B2K Core**. Voltage-hardened motor, foldable, full coaching + meal blueprint.",
+    cta: [
+      { label: "View Treadmills", href: "#products" },
+      { label: "Free Assessment", href: "https://reso-fit.lovable.app", event: "assessment_click" },
+      { label: "Restart", href: "#restart" },
+    ],
+  },
+  rec_treadmill3_b2kpro: {
+    text:
+      "✅ Pick: **ResoFlex 3.0HP + B2K Pro**. Serious cardio engine + advanced periodized coaching.",
+    cta: [
+      { label: "View Treadmills", href: "#products" },
+      { label: "Talk to Coach", href: WA_URL, event: "whatsapp_click" },
+      { label: "Restart", href: "#restart" },
+    ],
+  },
+  rec_treadmill4_b2kelite: {
+    text:
+      "✅ Flagship pick: **ResoFlex 4.0HP Elite + B2K Elite 90-Day**. Marathon-grade motor, VIP coach access, full transformation roadmap.",
+    cta: [
+      { label: "View Flagship", href: "#products" },
+      { label: "Free Assessment", href: "https://reso-fit.lovable.app", event: "assessment_click" },
+      { label: "Restart", href: "#restart" },
+    ],
+  },
+  rec_spin_b2kelite: {
+    text:
+      "✅ Pick: **ResoFlex Spin Bike + B2K Elite**. HIIT-ready, magnetic resistance, VIP coaching.",
+    cta: [
+      { label: "View Spin Bike", href: "#products" },
+      { label: "Restart", href: "#restart" },
+    ],
+  },
+  rec_b2kstarter: {
+    text: "✅ **B2K Starter (₦5k)** — perfect first step into glute training + nutrition basics.",
+    cta: [{ label: "Get B2K Starter", href: "#products" }, { label: "Restart", href: "#restart" }],
+  },
+  rec_b2kcore: {
+    text: "✅ **B2K Core (₦12k)** — complete sculpt & lift system with coach guidance.",
+    cta: [{ label: "Get B2K Core", href: "#products" }, { label: "Restart", href: "#restart" }],
+  },
+  rec_b2kpro_only: {
+    text: "✅ **B2K Pro (₦25k)** — advanced periodized strength + priority coach support.",
+    cta: [{ label: "Get B2K Pro", href: "#products" }, { label: "Restart", href: "#restart" }],
+  },
+  rec_b2kelite_full: {
+    text:
+      "✅ **B2K Elite 90-Day (₦50k)** — VIP transformation: personalized weekly plans + direct coach access.",
+    cta: [
+      { label: "Get B2K Elite", href: "#products" },
+      { label: "Talk to Coach", href: WA_URL, event: "whatsapp_click" },
+      { label: "Restart", href: "#restart" },
+    ],
+  },
+};
+
+// Fallback keyword answers when user types free-text.
+function freeText(input: string): Msg {
   const q = input.toLowerCase();
-  const cta = (label: string, href: string) => ({ label, href });
-
   if (/human|advisor|whatsapp|call|agent/.test(q)) {
     return {
       role: "bot",
-      text: "Connecting you to a ResoFlex advisor on WhatsApp now — average reply under 3 minutes.",
-      cta: [cta("Open WhatsApp", WA_URL)],
+      text: "Connecting you to a ResoFlex advisor on WhatsApp — average reply under 3 minutes.",
+      cta: [{ label: "Open WhatsApp", href: WA_URL, event: "whatsapp_click" }],
     };
   }
-  if (/treadmill|run|cardio/.test(q)) {
+  if (/delivery|ship|state/.test(q)) {
     return {
       role: "bot",
       text:
-        "For a Lagos/Abuja home, the ResoFlex 4.0HP Elite is our top pick — voltage-hardened motor (140–260V), foldable, 2-year warranty. Run a 60-sec assessment so I match your weight, space and goals.",
-      cta: [
-        cta("Start Free Assessment", "https://reso-fit.lovable.app"),
-        cta("View Treadmill", "#products"),
-      ],
-    };
-  }
-  if (/b2k|fat loss|weight loss|transform|plan|program/.test(q)) {
-    return {
-      role: "bot",
-      text:
-        "B2K is our 4-tier transformation system: Starter (₦5k), Core (₦12k), Pro (₦25k), Elite (₦50k). For fat loss, most clients start on B2K Core — coaching + meal blueprint + accountability.",
-      cta: [
-        cta("See B2K Plans", "#products"),
-        cta("Explore Programs", "https://joy-funnel-ai.lovable.app"),
-      ],
-    };
-  }
-  if (/bundle|setup|home gym|under|budget|naira|₦/.test(q)) {
-    return {
-      role: "bot",
-      text:
-        "Under ₦300k, I'd pair the ResoFlex Walking Pad + B2K Core coaching. Compact, NEPA-safe, and gets you 10k steps daily without leaving home.",
-      cta: [cta("View Bundle", "#products"), cta("Free Assessment", "https://reso-fit.lovable.app")],
-    };
-  }
-  if (/delivery|ship|lagos|abuja|port harcourt|state/.test(q)) {
-    return {
-      role: "bot",
-      text:
-        "Insured delivery: 2–4 working days within Lagos, Abuja, PH. 4–7 days nationwide (all 36 states). White-glove install included.",
-      cta: [cta("Chat Advisor", WA_URL)],
+        "Insured delivery: 2–4 days in Lagos/Abuja/PH. 4–7 days nationwide. White-glove install included.",
     };
   }
   if (/warranty|guarantee|return/.test(q)) {
     return {
       role: "bot",
-      text:
-        "Full 2-year warranty — motor, frame and electronics — serviced by ResoFlex-certified technicians. Pay-on-delivery & escrow available.",
+      text: "Full 2-year warranty — motor, frame, electronics. Pay-on-delivery & escrow available.",
     };
   }
-  if (/price|cost|how much/.test(q)) {
-    return {
-      role: "bot",
-      text:
-        "Pricing spans ₦5k (B2K Starter) to flagship treadmills. Tell me your goal and budget and I'll narrow it down in one reply.",
-      cta: [cta("Browse Catalog", "#products")],
-    };
-  }
-  return {
-    role: "bot",
-    text:
-      "I'm ChatB2K — your ResoFlex advisor. Ask me about equipment, B2K coaching plans, bundles, or delivery. Or jump straight to the assessment.",
-    cta: [
-      cta("Free Assessment", "https://reso-fit.lovable.app"),
-      cta("Open WhatsApp", WA_URL),
-    ],
-  };
+  // default: kick into decision tree
+  return { role: "bot", text: TREE.root.text, options: TREE.root.options };
 }
 
 export const ChatB2K = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
@@ -94,8 +207,9 @@ export const ChatB2K = ({ open, onClose }: { open: boolean; onClose: () => void 
     {
       role: "bot",
       text:
-        "Welcome to ChatB2K — your luxury fitness advisor. How can I help you transform today?",
+        "Welcome to ChatB2K — your luxury fitness advisor. Let's find your perfect plan in 3 taps.",
     },
+    { role: "bot", text: TREE.root.text, options: TREE.root.options },
   ]);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
@@ -107,21 +221,40 @@ export const ChatB2K = ({ open, onClose }: { open: boolean; onClose: () => void 
 
   if (!open) return null;
 
-  const send = (text: string) => {
-    if (!text.trim()) return;
-    setMessages((m) => [...m, { role: "user", text }]);
-    setInput("");
+  const pushBot = (m: Msg) => {
     setTyping(true);
     window.setTimeout(() => {
-      setMessages((m) => [...m, answer(text)]);
+      setMessages((prev) => [...prev, m]);
       setTyping(false);
-    }, 650);
+    }, 500);
+  };
+
+  const choose = (opt: Option) => {
+    track("chatb2k_step", { choice: opt.label, next: opt.next });
+    setMessages((prev) => [...prev, { role: "user", text: opt.label }]);
+    if (opt.next === "restart") {
+      pushBot({ role: "bot", text: TREE.root.text, options: TREE.root.options });
+      return;
+    }
+    const node = TREE[opt.next];
+    if (!node) return;
+    pushBot({ role: "bot", text: node.text, options: node.options, cta: node.cta });
+    if (opt.next.startsWith("rec_")) {
+      track("chatb2k_recommendation", { node: opt.next });
+    }
+  };
+
+  const send = (text: string) => {
+    if (!text.trim()) return;
+    track("chatb2k_message", { length: text.length });
+    setMessages((m) => [...m, { role: "user", text }]);
+    setInput("");
+    pushBot(freeText(text));
   };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center bg-noir-950/70 backdrop-blur-sm sm:items-center">
       <div className="relative flex h-[85vh] w-full max-w-md flex-col border border-gold/40 bg-noir-900 shadow-[var(--shadow-elevated)] sm:h-[600px]">
-        {/* Header */}
         <div className="flex items-center justify-between border-b border-gold/25 bg-noir-800/60 p-4">
           <div className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center bg-gradient-gold text-noir-900 shadow-gold">
@@ -135,7 +268,10 @@ export const ChatB2K = ({ open, onClose }: { open: boolean; onClose: () => void 
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={() => {
+              track("chatb2k_close");
+              onClose();
+            }}
             aria-label="Close chat"
             className="grid h-8 w-8 place-items-center text-foreground/60 hover:text-gold"
           >
@@ -143,35 +279,57 @@ export const ChatB2K = ({ open, onClose }: { open: boolean; onClose: () => void 
           </button>
         </div>
 
-        {/* Messages */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
           {messages.map((m, i) => (
-            <div
-              key={i}
-              className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-            >
+            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               <div
-                className={`max-w-[85%] px-3.5 py-2.5 text-sm leading-relaxed ${
+                className={`max-w-[88%] px-3.5 py-2.5 text-sm leading-relaxed ${
                   m.role === "user"
                     ? "bg-gradient-gold text-noir-900"
                     : "border border-gold/20 bg-noir-800/80 text-foreground/90"
                 }`}
               >
-                {m.text}
+                <span dangerouslySetInnerHTML={{ __html: m.text.replace(/\*\*(.+?)\*\*/g, "<strong class='text-gold'>$1</strong>") }} />
+                {m.options && (
+                  <div className="mt-3 flex flex-col gap-1.5">
+                    {m.options.map((o) => (
+                      <button
+                        key={o.label}
+                        onClick={() => choose(o)}
+                        className="border border-gold/40 bg-noir-900/60 px-3 py-2 text-left text-xs font-semibold text-foreground/90 transition hover:border-gold hover:text-gold"
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {m.cta && (
                   <div className="mt-2.5 flex flex-wrap gap-1.5">
-                    {m.cta.map((c) => (
-                      <a
-                        key={c.label}
-                        href={c.href}
-                        target={c.href.startsWith("http") ? "_blank" : undefined}
-                        rel="noreferrer"
-                        onClick={c.href.startsWith("#") ? onClose : undefined}
-                        className="inline-flex items-center gap-1.5 border border-gold/50 bg-noir-900/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-gold hover:bg-noir-800"
-                      >
-                        {c.label}
-                      </a>
-                    ))}
+                    {m.cta.map((c) =>
+                      c.href === "#restart" ? (
+                        <button
+                          key={c.label}
+                          onClick={() => choose({ label: "↻ Restart", next: "restart" })}
+                          className="inline-flex items-center gap-1.5 border border-foreground/30 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-foreground/70 hover:border-gold hover:text-gold"
+                        >
+                          ↻ {c.label}
+                        </button>
+                      ) : (
+                        <a
+                          key={c.label}
+                          href={c.href}
+                          target={c.href.startsWith("http") ? "_blank" : undefined}
+                          rel="noreferrer"
+                          onClick={() => {
+                            if (c.event) track(c.event, { source: "chatb2k_cta", label: c.label });
+                            if (c.href.startsWith("#")) onClose();
+                          }}
+                          className="inline-flex items-center gap-1.5 border border-gold/50 bg-noir-900/60 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-gold hover:bg-noir-800"
+                        >
+                          {c.label}
+                        </a>
+                      ),
+                    )}
                   </div>
                 )}
               </div>
@@ -188,20 +346,6 @@ export const ChatB2K = ({ open, onClose }: { open: boolean; onClose: () => void 
           )}
         </div>
 
-        {/* Quick replies */}
-        <div className="flex flex-wrap gap-1.5 border-t border-gold/15 bg-noir-800/40 px-3 py-2">
-          {QUICK.map((q) => (
-            <button
-              key={q}
-              onClick={() => send(q)}
-              className="border border-gold/30 px-2.5 py-1 text-[11px] text-foreground/80 hover:border-gold hover:text-gold"
-            >
-              {q}
-            </button>
-          ))}
-        </div>
-
-        {/* Input */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -212,7 +356,7 @@ export const ChatB2K = ({ open, onClose }: { open: boolean; onClose: () => void 
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask ChatB2K…"
+            placeholder="Or type a question…"
             className="flex-1 border border-gold/30 bg-noir-800 px-3 py-2.5 text-sm text-foreground placeholder:text-foreground/40 focus:border-gold focus:outline-none"
           />
           <button

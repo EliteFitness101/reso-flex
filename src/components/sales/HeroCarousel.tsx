@@ -114,12 +114,14 @@ export const HeroCarousel = () => {
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
-          <a href="#products" className="luxury-button inline-flex items-center gap-2 rounded-full px-8 py-4 text-sm shimmer">
+          <a href="#products" className="luxury-button inline-flex items-center gap-2 rounded-full px-8 py-4 text-sm shimmer"
+            onClick={() => import("@/lib/track").then(({ track }) => track("cta_click", { cta: "buy_checkout", source: "hero" }))}>
             <i className="fa-solid fa-cart-shopping" /> Buy / Checkout
           </a>
           <a
             href="https://reso-fit.lovable.app"
             target="_blank" rel="noreferrer"
+            onClick={() => import("@/lib/track").then(({ track }) => track("assessment_click", { source: "hero" }))}
             className="inline-flex items-center gap-2 rounded-full border border-gold/50 bg-noir-800/60 px-8 py-4 text-sm font-semibold text-gold backdrop-blur transition hover:bg-noir-700"
           >
             <i className="fa-solid fa-clipboard-check" /> Free Assessment
@@ -127,11 +129,13 @@ export const HeroCarousel = () => {
           <a
             href="https://joy-funnel-ai.lovable.app"
             target="_blank" rel="noreferrer"
+            onClick={() => import("@/lib/track").then(({ track }) => track("cta_click", { cta: "explore_programs", source: "hero" }))}
             className="inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-noir-800/40 px-8 py-4 text-sm font-semibold text-foreground/85 backdrop-blur transition hover:border-gold/40 hover:text-gold"
           >
             <i className="fa-solid fa-dumbbell" /> Explore Programs
           </a>
         </div>
+
 
         <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-foreground/55">
           <span className="flex items-center gap-2"><i className="fa-solid fa-shield-halved text-gold" /> 2-Year Warranty</span>
