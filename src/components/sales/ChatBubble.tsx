@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
+import { track } from "@/lib/track";
 
 const ChatB2K = lazy(() =>
   import("./ChatB2K").then((m) => ({ default: m.ChatB2K })),
@@ -12,26 +13,32 @@ export const ChatBubble = () => {
   const [shown, setShown] = useState(false);
   const [open, setOpen] = useState(false);
   const [pulse, setPulse] = useState(false);
-  const [lastY, setLastY] = useState(0);
 
-  // Appear after 3s
+  // Appear after 3s — fixed position, no layout shift (out of normal flow).
   useEffect(() => {
     const t = window.setTimeout(() => setShown(true), 3000);
     return () => window.clearTimeout(t);
   }, []);
 
-  // Reappear on scroll up
+  // Reappear on scroll-up (uses ref, not state, to avoid re-renders).
   useEffect(() => {
+    let lastY = window.scrollY;
+    let ticking = false;
     const onScroll = () => {
-      const y = window.scrollY;
-      if (y < lastY) setShown(true);
-      setLastY(y);
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        const y = window.scrollY;
+        if (y < lastY - 4) setShown(true);
+        lastY = y;
+        ticking = false;
+      });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [lastY]);
+  }, []);
 
-  // Pulse every 6s
+  // Pulse every 6s.
   useEffect(() => {
     const id = window.setInterval(() => {
       setPulse(true);
@@ -40,19 +47,35 @@ export const ChatBubble = () => {
     return () => window.clearInterval(id);
   }, []);
 
-  // Listen for global trigger (e.g. footer button)
   useEffect(() => {
-    const handler = () => setOpen(true);
+    const handler = () => {
+      track("chatb2k_open", { source: "global_event" });
+      setOpen(true);
+    };
     window.addEventListener("open-chatb2k", handler);
     return () => window.removeEventListener("open-chatb2k", handler);
   }, []);
 
+  const handleOpen = () => {
+    track("chatb2k_open", { source: "bubble" });
+    setOpen(true);
+  };
+
+  const handleWA = () => {
+    track("whatsapp_click", { source: "bubble" });
+  };
+
   return (
     <>
       <div
-        className={`fixed bottom-5 right-5 z-[90] transition-all duration-500 ${
-          shown ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0 pointer-events-none"
+        className={`fixed bottom-5 right-5 z-[90] transition-opacity duration-500 ${
+          shown ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
+        style={{
+          // Reserve box to prevent any browser repaint shift when toggling
+          willChange: "opacity",
+          contain: "layout paint",
+        }}
       >
         <div className="relative">
           {pulse && (
@@ -62,7 +85,7 @@ export const ChatBubble = () => {
             />
           )}
           <button
-            onClick={() => setOpen(true)}
+            onClick={handleOpen}
             aria-label="Open ChatB2K Advisor"
             className="group flex items-center gap-2 rounded-full border border-gold/60 bg-noir-900/85 px-4 py-3 text-gold shadow-gold backdrop-blur-xl transition hover:bg-noir-800 sm:px-5"
             style={{ animation: "floatY 4s ease-in-out infinite" }}
@@ -79,6 +102,7 @@ export const ChatBubble = () => {
             href={WA_URL}
             target="_blank"
             rel="noreferrer"
+            onClick={handleWA}
             aria-label="WhatsApp ResoFlex"
             className="absolute -top-2 -left-2 grid h-7 w-7 place-items-center rounded-full border border-gold/50 bg-noir-900 text-[#25D366] shadow-gold hover:scale-110 transition"
           >
