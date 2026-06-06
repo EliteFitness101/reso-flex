@@ -56,11 +56,15 @@ export const ChatBubble = () => {
 
   const handleOpen = () => {
     track("chatb2k_open", { source: "bubble" });
+    bumpIntent(6, "bubble_open");
+    lockFunnel("chatb2k", "bubble", "medium");
     setOpen(true);
   };
 
   const handleWA = () => {
     track("whatsapp_click", { source: "bubble" });
+    bumpIntent(5, "bubble_wa");
+    lockFunnel("whatsapp", "bubble", "soft");
   };
 
   return (
@@ -97,7 +101,7 @@ export const ChatBubble = () => {
             </span>
           </button>
           <a
-            href={WA_URL}
+            href={waUrl({ source: "bubble" })}
             target="_blank"
             rel="noreferrer"
             onClick={handleWA}
