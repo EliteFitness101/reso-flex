@@ -18,10 +18,14 @@
     
     
 
-    <!-- Security: CSP placeholder, hardening at server/CDN layer is mandatory -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self';" />
+    <!-- Hardened CSP: scripts limited to self + Paystack + cdnjs (Font Awesome).
+         'unsafe-inline' kept for styles (Tailwind generated + FA), removed unsafe-eval.
+         object-src none, frame-ancestors none, upgrade-insecure-requests, base-uri self. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.paystack.co https://checkout.paystack.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; frame-src https://checkout.paystack.com https://js.paystack.co; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://checkout.paystack.com; upgrade-insecure-requests" />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains; preload" />
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), interest-cohort=()" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
