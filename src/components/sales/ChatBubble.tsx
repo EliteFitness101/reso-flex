@@ -1,13 +1,11 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { track } from "@/lib/track";
+import { waUrl } from "@/lib/waScript";
+import { bumpIntent, lockFunnel } from "@/lib/funnelLock";
 
 const ChatB2K = lazy(() =>
   import("./ChatB2K").then((m) => ({ default: m.ChatB2K })),
 );
-
-const WA_URL =
-  "https://wa.me/2348132255842?text=" +
-  encodeURIComponent("Hi, I want help choosing my ResoFlex plan or equipment");
 
 export const ChatBubble = () => {
   const [shown, setShown] = useState(false);

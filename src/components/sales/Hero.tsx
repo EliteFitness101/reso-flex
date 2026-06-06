@@ -1,3 +1,6 @@
+import { waUrl } from "@/lib/waScript";
+import { bumpIntent, lockFunnel } from "@/lib/funnelLock";
+
 export const Hero = () => (
   <section id="top" className="relative overflow-hidden pt-6 pb-24 md:pt-12 md:pb-32">
     <div className="absolute inset-0 -z-10">
