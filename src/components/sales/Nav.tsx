@@ -1,3 +1,6 @@
+import { waUrl } from "@/lib/waScript";
+import { bumpIntent, lockFunnel } from "@/lib/funnelLock";
+
 export const Nav = () => (
   <header className="container flex items-center justify-between py-5">
     <a href="#top" className="flex items-center gap-2.5">
