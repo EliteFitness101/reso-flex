@@ -16,7 +16,8 @@ export const RILDebugPanel = () => {
   const [s, setS] = useState<FunnelState>(getFunnelState());
   useEffect(() => {
     if (!enabled) return;
-    return subscribeFunnel(setS);
+    const unsub = subscribeFunnel(setS);
+    return () => { unsub(); };
   }, [enabled]);
   if (!enabled) return null;
   return (
