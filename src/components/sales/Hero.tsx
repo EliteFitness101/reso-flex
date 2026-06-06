@@ -1,3 +1,6 @@
+import { waUrl } from "@/lib/waScript";
+import { bumpIntent, lockFunnel } from "@/lib/funnelLock";
+
 export const Hero = () => (
   <section id="top" className="relative overflow-hidden pt-6 pb-24 md:pt-12 md:pb-32">
     <div className="absolute inset-0 -z-10">
@@ -24,8 +27,9 @@ export const Hero = () => (
             <i className="fa-solid fa-cart-shopping" /> Shop the Collection
           </a>
           <a
-            href="https://wa.me/2348000000000?text=I'd%20like%20a%20ResoFlex%20advisor"
+            href={waUrl({ source: "hero" })}
             target="_blank" rel="noreferrer"
+            onClick={() => { bumpIntent(3, "hero_wa"); lockFunnel("whatsapp", "hero", "soft"); }}
             className="inline-flex items-center gap-2 rounded-full border border-gold/50 bg-noir-800/60 px-8 py-4 text-sm font-semibold text-gold backdrop-blur transition hover:bg-noir-700"
           >
             <i className="fa-brands fa-whatsapp text-lg" /> WhatsApp Advisor

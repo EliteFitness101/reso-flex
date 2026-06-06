@@ -1,13 +1,11 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { track } from "@/lib/track";
+import { waUrl } from "@/lib/waScript";
+import { bumpIntent, lockFunnel } from "@/lib/funnelLock";
 
 const ChatB2K = lazy(() =>
   import("./ChatB2K").then((m) => ({ default: m.ChatB2K })),
 );
-
-const WA_URL =
-  "https://wa.me/2348132255842?text=" +
-  encodeURIComponent("Hi, I want help choosing my ResoFlex plan or equipment");
 
 export const ChatBubble = () => {
   const [shown, setShown] = useState(false);
@@ -58,11 +56,15 @@ export const ChatBubble = () => {
 
   const handleOpen = () => {
     track("chatb2k_open", { source: "bubble" });
+    bumpIntent(6, "bubble_open");
+    lockFunnel("chatb2k", "bubble", "medium");
     setOpen(true);
   };
 
   const handleWA = () => {
     track("whatsapp_click", { source: "bubble" });
+    bumpIntent(5, "bubble_wa");
+    lockFunnel("whatsapp", "bubble", "soft");
   };
 
   return (
@@ -99,7 +101,7 @@ export const ChatBubble = () => {
             </span>
           </button>
           <a
-            href={WA_URL}
+            href={waUrl({ source: "bubble" })}
             target="_blank"
             rel="noreferrer"
             onClick={handleWA}

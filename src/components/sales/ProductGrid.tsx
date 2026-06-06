@@ -1,4 +1,6 @@
 import { NGN, PRODUCTS, type Product } from "@/data/products";
+import { waUrl } from "@/lib/waScript";
+import { bumpIntent, lockFunnel, setLastProduct } from "@/lib/funnelLock";
 
 type Props = { onBuy: (p: Product) => void };
 
@@ -98,14 +100,20 @@ export const ProductGrid = ({ onBuy }: Props) => {
                     ) : (
                       <>
                         <button
-                          onClick={() => onBuy(p)}
+                          onClick={() => {
+                            setLastProduct(p.sku);
+                            bumpIntent(15, `buy_${p.sku}`);
+                            lockFunnel("offer", `buy_${p.sku}`, "medium");
+                            onBuy(p);
+                          }}
                           className="luxury-button mt-5 inline-flex w-full items-center justify-center gap-2 px-5 py-3 text-[11px]"
                         >
                           <i className="fa-solid fa-lock" /> Secure Checkout
                         </button>
                         <a
-                          href={`https://wa.me/2348000000000?text=I%20want%20to%20order%20${encodeURIComponent(p.name)}%20(${p.sku})`}
+                          href={waUrl({ source: `pg_${p.sku}`, override: `Hi ResoFlex — I want to order ${p.name} (${p.sku}). Please confirm stock and delivery.` })}
                           target="_blank" rel="noreferrer"
+                          onClick={() => { setLastProduct(p.sku); bumpIntent(8, `wa_${p.sku}`); lockFunnel("whatsapp", `pg_${p.sku}`, "soft"); }}
                           className="mt-2 inline-flex w-full items-center justify-center gap-2 border border-gold/30 px-5 py-2.5 text-[11px] uppercase tracking-[0.2em] text-gold hover:bg-noir-700"
                         >
                           <i className="fa-brands fa-whatsapp" /> WhatsApp

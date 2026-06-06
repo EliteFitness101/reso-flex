@@ -1,15 +1,21 @@
 import { track } from "@/lib/track";
+import { waUrl } from "@/lib/waScript";
+import { bumpIntent, lockFunnel } from "@/lib/funnelLock";
 
-const WA_URL =
-  "https://wa.me/2348132255842?text=" +
-  encodeURIComponent("Hi, I want help choosing my ResoFlex plan or equipment");
+const WA_URL = waUrl({ source: "footer" });
 
 const openChat = () => {
   track("chatb2k_open", { source: "footer" });
+  bumpIntent(5, "footer_chat");
+  lockFunnel("chatb2k", "footer", "soft");
   window.dispatchEvent(new Event("open-chatb2k"));
 };
 
-const trackWA = (src: string) => () => track("whatsapp_click", { source: src });
+const trackWA = (src: string) => () => {
+  track("whatsapp_click", { source: src });
+  bumpIntent(4, `footer_wa_${src}`);
+  lockFunnel("whatsapp", src, "soft");
+};
 const trackAssess = (src: string) => () => track("assessment_click", { source: src });
 
 const TESTIMONIALS = [
