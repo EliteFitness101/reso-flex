@@ -16,8 +16,9 @@ export const Nav = () => (
       <a href="#faq" className="hover:text-gold transition-colors">FAQ</a>
     </nav>
     <a
-      href="https://wa.me/2348000000000"
+      href={waUrl({ source: "nav" })}
       target="_blank" rel="noreferrer"
+      onClick={() => { bumpIntent(2, "nav_wa"); lockFunnel("whatsapp", "nav", "soft"); }}
       className="hidden sm:inline-flex items-center gap-2 rounded-full border border-gold/40 bg-noir-800/60 px-4 py-2 text-xs font-medium text-gold backdrop-blur hover:bg-noir-700"
     >
       <i className="fa-brands fa-whatsapp text-base" /> Advisor
