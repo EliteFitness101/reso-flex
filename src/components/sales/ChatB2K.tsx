@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { track } from "@/lib/track";
+import { waUrl } from "@/lib/waScript";
+import { bumpIntent, lockFunnel } from "@/lib/funnelLock";
 
-const WA_URL =
-  "https://wa.me/2348132255842?text=" +
-  encodeURIComponent("Hi, I want help choosing my ResoFlex plan or equipment");
+const WA_URL = waUrl({ source: "chatb2k" });
 
 type CTA = { label: string; href: string; event?: string };
 type Msg = { role: "user" | "bot"; text: string; cta?: CTA[]; options?: Option[] };
