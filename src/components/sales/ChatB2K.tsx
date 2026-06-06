@@ -289,7 +289,11 @@ export const ChatB2K = ({ open, onClose }: { open: boolean; onClose: () => void 
                     : "border border-gold/20 bg-noir-800/80 text-foreground/90"
                 }`}
               >
-                <span dangerouslySetInnerHTML={{ __html: m.text.replace(/\*\*(.+?)\*\*/g, "<strong class='text-gold'>$1</strong>") }} />
+                {m.role === "bot" ? (
+                  <span dangerouslySetInnerHTML={{ __html: m.text.replace(/\*\*(.+?)\*\*/g, "<strong class='text-gold'>$1</strong>") }} />
+                ) : (
+                  <span>{m.text}</span>
+                )}
                 {m.options && (
                   <div className="mt-3 flex flex-col gap-1.5">
                     {m.options.map((o) => (
