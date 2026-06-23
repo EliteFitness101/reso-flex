@@ -54,7 +54,7 @@ export const CORE_PRODUCTS: Product[] = [
     paystackUrl: "https://paystack.shop/pay/buttgrowthb2k",
   },
 
-  // RESOFLEX SYSTEM
+  // RESOFLEX
   {
     id: "rf-blue",
     slug: "rf-expansion-module-blue",
@@ -89,7 +89,7 @@ export const CORE_PRODUCTS: Product[] = [
     isFree: true,
   },
 
-  // B2K SYSTEM
+  // B2K
   {
     id: "b2k-starter",
     slug: "buttgrowthb2k-starter",
