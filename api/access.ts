@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import TokenService from '../src/services/token.service';
-import PaymentValidator from '../src/core/payment-validator';
+import TokenService from '@/services/token.service';
+import PaymentValidator from '@/core/payment-validator';
 
 /**
  * Access Token Endpoint

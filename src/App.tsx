@@ -5,13 +5,6 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
 import ProductPage from "./pages/ProductPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import AssessmentPage from "./pages/AssessmentPage";
-import ThankYouPage from "./pages/ThankYouPage";
-import MembershipPage from "./pages/MembershipPage";
-
-import VipDashboard from "./pages/VipDashboard";
-import EliteDashboard from "./pages/EliteDashboard";
 
 import { productRoutes } from "@/core/router/product.routes";
 
@@ -29,15 +22,7 @@ export default function App() {
             <Route key={r.path} path={r.path} element={r.element} />
           ))}
 
-          {/* FUNNEL */}
-          <Route path="/checkout/:slug" element={<CheckoutPage />} />
-          <Route path="/assessment" element={<AssessmentPage />} />
-          <Route path="/thank-you" element={<ThankYouPage />} />
-          <Route path="/membership" element={<MembershipPage />} />
 
-          {/* DASHBOARDS */}
-          <Route path="/vip" element={<VipDashboard />} />
-          <Route path="/elite" element={<EliteDashboard />} />
 
           {/* FALLBACK */}
           <Route path="*" element={<NotFound />} />

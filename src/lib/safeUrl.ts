@@ -4,15 +4,22 @@
 const FALLBACK = "https://reso-fit.lovable.app";
 
 const ALLOWED_HOSTS = [
+  // Primary domains
+  "start.resofit.fit",
+  "resofit.fit",
+  "joy-funnel-ai.lovable.app",
+  // Legacy domains (kept for backwards compatibility)
   "nownowgym.lovable.app",
   "reso-fit.lovable.app",
   "reso-flex-treadmill.lovable.app",
   "redzone-recruit.lovable.app",
-  "resofit.fit",
-  "wa.me",
-  "api.whatsapp.com",
+  // Payment processors
+  "paystack.shop",
   "paystack.com",
   "checkout.paystack.com",
+  // WhatsApp
+  "wa.me",
+  "api.whatsapp.com",
 ];
 
 export function safeExternalUrl(input?: string | null, fallback: string = FALLBACK): string {

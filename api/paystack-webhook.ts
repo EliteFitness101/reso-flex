@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import PaymentValidator from '../src/core/payment-validator';
-import TokenService from '../src/services/token.service';
-import WhatsAppService from '../src/services/whatsapp.service';
+import PaymentValidator from '@/core/payment-validator';
+import TokenService from '@/services/token.service';
+import WhatsAppService from '@/services/whatsapp.service';
 
 /**
  * Paystack Webhook Handler

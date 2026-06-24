@@ -1,0 +1,74 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm run build",
+  "env": {
+    "VITE_PAYSTACK_PUBLIC_KEY": "@vite_paystack_public_key",
+    "VITE_PAYSTACK_SECRET_KEY": "@vite_paystack_secret_key",
+    "VITE_TOKEN_SECRET": "@vite_token_secret",
+    "VITE_WHATSAPP_ACCESS_TOKEN": "@vite_whatsapp_access_token",
+    "VITE_WHATSAPP_PHONE_ID": "@vite_whatsapp_phone_id",
+    "VITE_WHATSAPP_BUSINESS_ACCOUNT_ID": "@vite_whatsapp_business_account_id"
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1",
+      "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "/robots.txt"
+    },
+    {
+      "src": "/sitemap.xml",
+      "dest": "/api/sitemap"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html",
+      "status": 200
+    }
+  ],
+  "functions": {
+    "api/**.ts": {
+      "runtime": "nodejs18.x",
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  },
+  "redirects": [
+    {
+      "source": "/checkout",
+      "destination": "/?tab=checkout",
+      "permanent": false
+    },
+    {
+      "source": "/funnel",
+      "destination": "https://joy-funnel-ai.lovable.app/?rsid=rs_daaee90990874cc8b5e5&utm_source=resoflex_os&utm_medium=spa&utm_campaign=sovereign_os_v4_2&cta=sticky_mobile&funnel_origin=resoflex_os",
+      "permanent": false
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Credentials",
+          "value": "true"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
+        }
+      ]
+    }
+  ]
+}

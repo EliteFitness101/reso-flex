@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import WhatsAppService from '../src/services/whatsapp.service';
+import WhatsAppService from '@/services/whatsapp.service';
 
 /**
  * WhatsApp Message Endpoint

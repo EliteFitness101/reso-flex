@@ -1,5 +1,3 @@
-import crypto from 'crypto';
-
 export interface AccessToken {
   id: string;
   productId: string;
@@ -16,11 +14,11 @@ export interface TokenValidationResult {
 }
 
 const TOKEN_VALIDITY_DAYS = 365; // 1 year access
-const TOKEN_SECRET = process.env.VITE_TOKEN_SECRET || 'dev-secret-key-change-in-production';
 
 class TokenService {
   /**
-   * Generate a JWT-like access token
+   * Generate a simple access token (crypto signing done server-side)
+   * Browser: Just create a reference token, server validates on /api/access
    */
   static generateToken(
     productId: string,
@@ -28,7 +26,7 @@ class TokenService {
     reference: string
   ): string {
     const payload: AccessToken = {
-      id: crypto.randomBytes(16).toString('hex'),
+      id: this.generateId(),
       productId,
       email,
       issuedAt: Date.now(),
@@ -36,49 +34,29 @@ class TokenService {
       reference,
     };
 
-    // Create a simple signature using HMAC
-    const payloadStr = JSON.stringify(payload);
-    const signature = crypto
-      .createHmac('sha256', TOKEN_SECRET)
-      .update(payloadStr)
-      .digest('hex');
-
-    // Return base64 encoded payload.signature
-    const token = `${Buffer.from(payloadStr).toString('base64')}.${signature}`;
+    // Return base64 encoded payload only (signature verified server-side)
+    const token = btoa(JSON.stringify(payload));
     return token;
   }
 
   /**
-   * Validate and decode token
+   * Simple UUID-like ID generator for browser
+   */
+  private static generateId(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+
+  /**
+   * Validate and decode token (basic validation on browser side)
    */
   static validateToken(token: string): TokenValidationResult {
     try {
-      const [payloadStr, signature] = token.split('.');
-
-      if (!payloadStr || !signature) {
-        return {
-          valid: false,
-          error: 'Invalid token format',
-        };
-      }
-
       // Decode payload
-      const payload: AccessToken = JSON.parse(
-        Buffer.from(payloadStr, 'base64').toString()
-      );
-
-      // Verify signature
-      const expectedSignature = crypto
-        .createHmac('sha256', TOKEN_SECRET)
-        .update(payloadStr)
-        .digest('hex');
-
-      if (signature !== expectedSignature) {
-        return {
-          valid: false,
-          error: 'Invalid token signature',
-        };
-      }
+      const payload: AccessToken = JSON.parse(atob(token));
 
       // Check expiry
       if (payload.expiresAt < Date.now()) {

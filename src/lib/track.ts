@@ -4,7 +4,23 @@
 
 type Props = Record<string, string | number | boolean | undefined | null>;
 
-export function track(event: string, props: Props = {}) {
+/**
+ * Supported event types:
+ * - assessment_complete: User completed assessment/funnel step
+ * - paystack_checkout: User initiated Paystack payment
+ * - whatsapp_click: User clicked WhatsApp CTA
+ * - chatb2k_launch: User launched B2K chat interface
+ * - utm_tracking: UTM parameters captured at session start
+ */
+export type TrackingEventType =
+  | 'assessment_complete'
+  | 'paystack_checkout'
+  | 'whatsapp_click'
+  | 'chatb2k_launch'
+  | 'utm_tracking'
+  | string;
+
+export function track(event: TrackingEventType, props: Props = {}) {
   try {
     const payload = {
       event,
