@@ -1,14 +1,47 @@
+# ResoFlex Elite - RESOFLEX™ SOVEREIGN OS v4.2
+# Search Engine Crawling Directives
+
+# Allow all search engines
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /*.json
+Disallow: /.env
+Disallow: /node_modules/
+
+# Specific rules for Google
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
+# Specific rules for Bing
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 2
 
+# Allow social media crawlers
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
+User-agent: LinkedInBot
 Allow: /
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+# Sitemap location
+Sitemap: https://resofit.fit/sitemap.xml
+
+# Cache control
+Host: https://resofit.fit
