@@ -34,7 +34,7 @@ export const ProductGrid = ({ onBuy }: Props) => {
 
   return (
     <section id="products" className="relative py-24">
-      <div className="container">
+      <div className="container" ref={rootRef}>
         <div className="mx-auto max-w-2xl text-center">
           <div className="text-xs uppercase tracking-[0.4em] text-gold">// The Collection</div>
           <h2 className="mt-4 font-display text-3xl font-bold md:text-5xl">
