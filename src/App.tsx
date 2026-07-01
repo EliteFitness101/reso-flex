@@ -22,15 +22,6 @@ export default function App() {
             <Route key={r.path} path={r.path} element={r.element} />
           ))}
 
-          {/* FUNNEL */}
-          <Route path="/checkout/:slug" element={<CheckoutPage />} />
-          <Route path="/assessment" element={<AssessmentPage />} />
-          <Route path="/thank-you" element={<ThankYouPage />} />
-          <Route path="/membership" element={<MembershipPage />} />
-
-          {/* DASHBOARDS */}
-          <Route path="/vip" element={<VipDashboard />} />
-          <Route path="/elite" element={<EliteDashboard />} />
 
           {/* FALLBACK */}
           <Route path="*" element={<NotFound />} />
