@@ -1,8 +1,22 @@
 // Lightweight, vendor-agnostic event tracking.
 // Pipes to window.dataLayer (GTM), gtag, fbq, plausible, posthog — whichever exists.
+// Also forwards a curated set of ecommerce events to the Make.com webhook.
 // Always logs to console in dev for debugging.
 
+import { sendWebhook } from "./webhook";
+import { getAttribution } from "./attribution";
+
 type Props = Record<string, string | number | boolean | undefined | null>;
+
+// Events forwarded to the central webhook
+const WEBHOOK_EVENTS = new Set([
+  "product_view",
+  "bundle_view",
+  "checkout_start",
+  "payment_success",
+]);
+
+
 
 export function track(event: string, props: Props = {}) {
   try {
@@ -33,37 +47,37 @@ export function track(event: string, props: Props = {}) {
       window.dataLayer.push(payload);
     } catch {}
 
+    const w = window as any;
+
     // gtag
     try {
-      // @ts-expect-error optional global
-      if (typeof window.gtag === "function")
-        window.gtag("event", event, props);
+      if (typeof w.gtag === "function") w.gtag("event", event, props);
     } catch {}
 
     // Meta Pixel
     try {
-      // @ts-expect-error optional global
-      if (typeof window.fbq === "function")
-        window.fbq("trackCustom", event, props);
+      if (typeof w.fbq === "function") w.fbq("trackCustom", event, props);
     } catch {}
 
     // Plausible
     try {
-      // @ts-expect-error optional global
-      if (typeof window.plausible === "function")
-        window.plausible(event, { props });
+      if (typeof w.plausible === "function") w.plausible(event, { props });
     } catch {}
 
     // PostHog
     try {
-      // @ts-expect-error optional global
-      if (window.posthog?.capture)
-        window.posthog.capture(event, props);
+      if (w.posthog?.capture) w.posthog.capture(event, props);
     } catch {}
+
+    // Central webhook (Make.com) — only ecommerce lifecycle events
+    if (WEBHOOK_EVENTS.has(event)) {
+      sendWebhook(event, { ...props, attribution: getAttribution() });
+    }
 
     if (import.meta.env.DEV) {
       console.debug("[track]", event, props);
     }
+
   } catch {
     // never break app flow
   }

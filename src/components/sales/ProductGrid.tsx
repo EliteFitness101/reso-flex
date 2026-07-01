@@ -1,13 +1,40 @@
+import { useEffect, useRef } from "react";
 import { NGN, PRODUCTS, type Product } from "@/data/products";
 import { waUrl } from "@/lib/waScript";
 import { bumpIntent, lockFunnel, setLastProduct } from "@/lib/funnelLock";
+import { track } from "@/lib/track";
 
 type Props = { onBuy: (p: Product) => void };
 
 export const ProductGrid = ({ onBuy }: Props) => {
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const seen = new Set<string>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          const el = e.target as HTMLElement;
+          const sku = el.dataset.sku;
+          const handle = el.dataset.handle;
+          if (!sku || seen.has(sku)) continue;
+          seen.add(sku);
+          track("product_view", { sku, handle });
+        }
+      },
+      { threshold: 0.4 }
+    );
+    root.querySelectorAll<HTMLElement>("[data-sku]").forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+
   return (
     <section id="products" className="relative py-24">
-      <div className="container">
+      <div className="container" ref={rootRef}>
         <div className="mx-auto max-w-2xl text-center">
           <div className="text-xs uppercase tracking-[0.4em] text-gold">// The Collection</div>
           <h2 className="mt-4 font-display text-3xl font-bold md:text-5xl">
@@ -104,6 +131,7 @@ export const ProductGrid = ({ onBuy }: Props) => {
                             setLastProduct(p.sku);
                             bumpIntent(15, `buy_${p.sku}`);
                             lockFunnel("offer", `buy_${p.sku}`, "medium");
+                            track("checkout_start", { sku: p.sku, handle: p.handle, name: p.name, price: p.now, source: "product_grid" });
                             onBuy(p);
                           }}
                           className="luxury-button mt-5 inline-flex w-full items-center justify-center gap-2 px-5 py-3 text-[11px]"

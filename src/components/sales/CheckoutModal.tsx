@@ -1,4 +1,6 @@
 import { type Product } from "@/data/products";
+import { track } from "@/lib/track";
+import { getAttribution } from "@/lib/attribution";
 
 type Props = {
   product: Product;
@@ -44,6 +46,15 @@ export const CheckoutModal = ({ product, onClose, onPaid }: Props) => {
       item: product.name,
       sku: product.sku,
       handle: product.handle,
+    });
+    track("payment_success", {
+      sku: product.sku,
+      handle: product.handle,
+      name: product.name,
+      value: product.now,
+      currency: "NGN",
+      email: String(fd.get("email") || ""),
+      attribution: JSON.stringify(getAttribution()),
     });
     console.info("[Checkout] payload", payload);
     setTimeout(() => onPaid(product), 600);

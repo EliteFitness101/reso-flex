@@ -1,133 +1,61 @@
 import { Product, PRODUCTS } from "@/data/products";
 
 /**
- * Product Brain = Intelligence Layer
- * NOT a database (IMPORTANT)
- * It reads from products.ts and adds logic on top
+ * Product Brain = Intelligence Layer over products.ts
  */
 
-export type ProductCategory =
-  | "digital"
-  | "physical"
-  | "bundle"
-  | "membership";
+export const getProductBySlug = (slug: string): Product | undefined =>
+  PRODUCTS.find((p) => p.handle === slug);
+
+export const getProductById = (id: string): Product | undefined =>
+  PRODUCTS.find((p) => p.id === id);
+
+export const getFeaturedProducts = (): Product[] =>
+  PRODUCTS.filter((p) => p.popular);
+
+export const getFreeProducts = (): Product[] =>
+  PRODUCTS.filter((p) => p.free);
+
+export const getPaidProducts = (): Product[] =>
+  PRODUCTS.filter((p) => !p.free && p.now > 0);
 
 /**
- * CORE LOOKUP
+ * PRICING TIERS
  */
-export const getProductBySlug = (slug: string): Product | undefined => {
-  return PRODUCTS.find((p) => p.slug === slug);
-};
+export const isHighTicket = (p: Product) => p.now >= 25000;
+export const isMidTicket = (p: Product) => p.now >= 10000 && p.now < 25000;
+export const isLowTicket = (p: Product) => p.now > 0 && p.now < 10000;
 
-export const getProductById = (id: string): Product | undefined => {
-  return PRODUCTS.find((p) => p.id === id);
-};
-
-/**
- * FUNNEL SEGMENTATION
- */
-export const getFeaturedProducts = (): Product[] => {
-  return PRODUCTS.filter((p) => p.featured);
-};
-
-export const getDigitalProducts = (): Product[] => {
-  return PRODUCTS.filter((p) => p.category === "digital");
-};
-
-export const getBundles = (): Product[] => {
-  return PRODUCTS.filter((p) => p.category === "bundle");
-};
-
-export const getMemberships = (): Product[] => {
-  return PRODUCTS.filter((p) => p.category === "membership");
-};
+export const isPopular = (p: Product) => Boolean(p.popular);
+export const isFreeProduct = (p: Product) => Boolean(p.free) || p.now === 0;
 
 /**
- * PRICING INTELLIGENCE
- */
-export const isHighTicket = (product: Product): boolean => {
-  return product.price >= 25000;
-};
-
-export const isMidTicket = (product: Product): boolean => {
-  return product.price >= 10000 && product.price < 25000;
-};
-
-export const isLowTicket = (product: Product): boolean => {
-  return product.price < 10000;
-};
-
-/**
- * CONVERSION SIGNALS
- */
-export const isPopular = (product: Product): boolean => {
-  return Boolean(product.featured);
-};
-
-export const isFreeProduct = (product: Product): boolean => {
-  return product.price === 0;
-};
-
-/**
- * CHECKOUT INTELLIGENCE
- */
-export const getCheckoutUrl = (product: Product): string | null => {
-  if (isFreeProduct(product)) return null;
-  return product.paystackUrl || null;
-};
-
-/**
- * FUNNEL ROUTING HELPERS
+ * UPSELL TIERING
  */
 export const getNextUpsellTier = (product: Product): Product[] => {
-  const price = product.price;
-
-  // Simple tier-based upsell logic
-  if (price < 10000) {
-    return PRODUCTS.filter((p) => p.price >= 10000 && p.price < 25000);
-  }
-
-  if (price < 25000) {
-    return PRODUCTS.filter((p) => p.price >= 25000);
-  }
-
-  return PRODUCTS.filter((p) => p.category === "bundle");
+  const price = product.now;
+  if (price < 10000) return PRODUCTS.filter((p) => p.now >= 10000 && p.now < 25000);
+  if (price < 25000) return PRODUCTS.filter((p) => p.now >= 25000 && p.id !== product.id);
+  return PRODUCTS.filter((p) => p.popular && p.id !== product.id);
 };
 
 /**
- * SEARCH / CHATB2K SUPPORT
+ * SEARCH
  */
 export const searchProducts = (query: string): Product[] => {
   const q = query.toLowerCase();
-
   return PRODUCTS.filter(
     (p) =>
       p.name.toLowerCase().includes(q) ||
-      p.slug.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q)
+      p.handle.toLowerCase().includes(q) ||
+      p.sku.toLowerCase().includes(q)
   );
 };
 
-/**
- * SAFETY VALIDATION (DEV ONLY)
- */
 export const validateProductBrain = (): void => {
-  const slugs = PRODUCTS.map((p) => p.slug);
-  const duplicateSlugs = slugs.filter(
-    (slug, i) => slugs.indexOf(slug) !== i
-  );
-
-  if (duplicateSlugs.length > 0) {
-    throw new Error(
-      `Duplicate product slugs detected: ${duplicateSlugs.join(", ")}`
-    );
-  }
-
-  const missingPaystack = PRODUCTS.filter(
-    (p) => !p.paystackUrl && p.price > 0
-  );
-
-  if (missingPaystack.length > 0) {
-    console.warn("Products missing Paystack URLs:", missingPaystack);
+  const handles = PRODUCTS.map((p) => p.handle);
+  const dup = handles.filter((h, i) => handles.indexOf(h) !== i);
+  if (dup.length > 0) {
+    throw new Error(`Duplicate product handles detected: ${dup.join(", ")}`);
   }
 };
