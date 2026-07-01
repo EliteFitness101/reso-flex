@@ -5,13 +5,6 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
 import ProductPage from "./pages/ProductPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import AssessmentPage from "./pages/AssessmentPage";
-import ThankYouPage from "./pages/ThankYouPage";
-import MembershipPage from "./pages/MembershipPage";
-
-import VipDashboard from "./pages/VipDashboard";
-import EliteDashboard from "./pages/EliteDashboard";
 
 import { productRoutes } from "@/core/router/product.routes";
 
