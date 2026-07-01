@@ -1,10 +1,37 @@
+import { useEffect, useRef } from "react";
 import { NGN, PRODUCTS, type Product } from "@/data/products";
 import { waUrl } from "@/lib/waScript";
 import { bumpIntent, lockFunnel, setLastProduct } from "@/lib/funnelLock";
+import { track } from "@/lib/track";
 
 type Props = { onBuy: (p: Product) => void };
 
 export const ProductGrid = ({ onBuy }: Props) => {
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const seen = new Set<string>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          const el = e.target as HTMLElement;
+          const sku = el.dataset.sku;
+          const handle = el.dataset.handle;
+          if (!sku || seen.has(sku)) continue;
+          seen.add(sku);
+          track("product_view", { sku, handle });
+        }
+      },
+      { threshold: 0.4 }
+    );
+    root.querySelectorAll<HTMLElement>("[data-sku]").forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+
   return (
     <section id="products" className="relative py-24">
       <div className="container">
