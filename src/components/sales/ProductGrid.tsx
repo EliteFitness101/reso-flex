@@ -131,6 +131,7 @@ export const ProductGrid = ({ onBuy }: Props) => {
                             setLastProduct(p.sku);
                             bumpIntent(15, `buy_${p.sku}`);
                             lockFunnel("offer", `buy_${p.sku}`, "medium");
+                            track("checkout_start", { sku: p.sku, handle: p.handle, name: p.name, price: p.now, source: "product_grid" });
                             onBuy(p);
                           }}
                           className="luxury-button mt-5 inline-flex w-full items-center justify-center gap-2 px-5 py-3 text-[11px]"
