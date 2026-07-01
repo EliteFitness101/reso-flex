@@ -1,8 +1,22 @@
 // Lightweight, vendor-agnostic event tracking.
 // Pipes to window.dataLayer (GTM), gtag, fbq, plausible, posthog — whichever exists.
+// Also forwards a curated set of ecommerce events to the Make.com webhook.
 // Always logs to console in dev for debugging.
 
+import { sendWebhook } from "./webhook";
+import { getAttribution } from "./attribution";
+
 type Props = Record<string, string | number | boolean | undefined | null>;
+
+// Events forwarded to the central webhook
+const WEBHOOK_EVENTS = new Set([
+  "product_view",
+  "bundle_view",
+  "checkout_start",
+  "payment_success",
+]);
+
+
 
 export function track(event: string, props: Props = {}) {
   try {
