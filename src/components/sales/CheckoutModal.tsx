@@ -1,4 +1,6 @@
 import { type Product } from "@/data/products";
+import { track } from "@/lib/track";
+import { getAttribution } from "@/lib/attribution";
 
 type Props = {
   product: Product;
