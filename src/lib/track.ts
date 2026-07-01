@@ -69,10 +69,15 @@ export function track(event: string, props: Props = {}) {
       if (w.posthog?.capture) w.posthog.capture(event, props);
     } catch {}
 
+    // Central webhook (Make.com) — only ecommerce lifecycle events
+    if (WEBHOOK_EVENTS.has(event)) {
+      sendWebhook(event, { ...props, attribution: getAttribution() });
+    }
 
     if (import.meta.env.DEV) {
       console.debug("[track]", event, props);
     }
+
   } catch {
     // never break app flow
   }
