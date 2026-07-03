@@ -75,6 +75,9 @@ export function track(event: string, props: Props = {}) {
       sendWebhook(event, { ...props, attribution: getAttribution() });
     }
 
+    // Persist journey events to DB for Revenue OS WhatsApp report
+    logFunnel(event, props as Record<string, unknown>);
+
     if (import.meta.env.DEV) {
       console.debug("[track]", event, props);
     }
