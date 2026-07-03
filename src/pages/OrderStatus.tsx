@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+
 
 type OrderView = {
   status: "pending" | "paid" | "failed" | "cancelled" | "refunded";
