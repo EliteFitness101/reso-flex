@@ -18,6 +18,8 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/order/:reference" element={<OrderStatus />} />
+          <Route path="/admin/whatsapp" element={<WhatsAppReport />} />
 
           {/* 🧠 AUTO PRODUCT ROUTES */}
           {productRoutes.map((r) => (
