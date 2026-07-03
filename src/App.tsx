@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import OrderStatus from "./pages/OrderStatus";
+import WhatsAppReport from "./pages/WhatsAppReport";
 
 import ProductPage from "./pages/ProductPage";
 
