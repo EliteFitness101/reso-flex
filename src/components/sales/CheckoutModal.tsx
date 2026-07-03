@@ -1,6 +1,6 @@
 import { type Product } from "@/data/products";
 import { track } from "@/lib/track";
-import { getAttribution } from "@/lib/attribution";
+import { waUrl } from "@/lib/waScript";
 
 type Props = {
   product: Product;
@@ -8,56 +8,37 @@ type Props = {
   onPaid: (p: Product) => void;
 };
 
-export const CheckoutModal = ({ product, onClose, onPaid }: Props) => {
-  const handlePay = async (e: React.FormEvent<HTMLFormElement>) => {
+// NOTE: Payment confirmation MUST come from a verified Paystack webhook
+// (server-side). This modal only initiates an order handoff to the sales
+// team via WhatsApp — it never marks an order as paid on the client.
+export const CheckoutModal = ({ product, onClose }: Props) => {
+  const handleOrder = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     if (fd.get("website")) return; // honeypot
 
-    // Build payment payload with custom metadata for live rails mapping
-    const payload = {
-      amount: product.now * 100, // kobo
-      currency: "NGN",
-      email: fd.get("email"),
-      metadata: {
-        handle: product.handle,
-        sku: product.sku,
-        product_name: product.name,
-        custom_fields: [
-          {
-            display_name: "Variant SKU",
-            variable_name: "variant_sku",
-            value: product.sku,
-          },
-          {
-            display_name: "Product Handle",
-            variable_name: "product_handle",
-            value: product.handle,
-          },
-        ],
-      },
-    };
+    const name = String(fd.get("name") || "").slice(0, 120);
+    const email = String(fd.get("email") || "").slice(0, 255);
+    const phone = String(fd.get("phone") || "").slice(0, 20);
+    const address = String(fd.get("address") || "").slice(0, 255);
 
-    // TODO: Initialize Paystack with payload above (variant_sku passes through to webhook)
-    (window as any).dataLayer?.push({
-      event: "purchase",
-      value: product.now,
-      currency: "NGN",
-      item: product.name,
-      sku: product.sku,
-      handle: product.handle,
-    });
-    track("payment_success", {
+    track("checkout_start", {
       sku: product.sku,
       handle: product.handle,
       name: product.name,
       value: product.now,
       currency: "NGN",
-      email: String(fd.get("email") || ""),
-      attribution: JSON.stringify(getAttribution()),
+      source: "checkout_modal",
     });
-    console.info("[Checkout] payload", payload);
-    setTimeout(() => onPaid(product), 600);
+
+    const message =
+      `Hi ResoFlex — I'd like to order ${product.name} (${product.priceLabel}).\n\n` +
+      `Name: ${name}\nEmail: ${email}\nPhone: ${phone}\nDelivery: ${address}\n` +
+      `SKU: ${product.sku}\n\nPlease send the secure Paystack link to complete payment.`;
+
+    const url = waUrl({ override: message, source: `checkout_${product.sku}` });
+    window.open(url, "_blank", "noopener,noreferrer");
+    onClose();
   };
 
   return (
@@ -68,7 +49,7 @@ export const CheckoutModal = ({ product, onClose, onPaid }: Props) => {
       >
         <div className="flex items-start justify-between">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.35em] text-gold">// Secure Checkout</div>
+            <div className="text-[10px] uppercase tracking-[0.35em] text-gold">// Request Secure Checkout</div>
             <h3 className="mt-2 font-display text-lg font-bold leading-tight">{product.name}</h3>
             <div className="mt-1 text-[10px] uppercase tracking-[0.25em] text-foreground/45">SKU · {product.sku}</div>
           </div>
@@ -80,10 +61,8 @@ export const CheckoutModal = ({ product, onClose, onPaid }: Props) => {
           <span className="font-display text-xl font-bold gold-text">{product.priceLabel}</span>
         </div>
 
-        <form onSubmit={handlePay} className="mt-5 space-y-3">
+        <form onSubmit={handleOrder} className="mt-5 space-y-3">
           <input type="text" name="website" tabIndex={-1} autoComplete="off" className="absolute -left-[9999px] h-0 w-0" />
-          <input type="hidden" name="variant_sku" value={product.sku} />
-          <input type="hidden" name="product_handle" value={product.handle} />
 
           <input required name="name" placeholder="Full name" maxLength={120}
             className="w-full border border-border bg-noir-900/70 px-4 py-3 text-sm outline-none focus:border-gold/70" />
@@ -95,10 +74,10 @@ export const CheckoutModal = ({ product, onClose, onPaid }: Props) => {
             className="w-full border border-border bg-noir-900/70 px-4 py-3 text-sm outline-none focus:border-gold/70" />
 
           <button type="submit" className="luxury-button w-full py-3.5 text-[11px]">
-            <i className="fa-solid fa-lock mr-2" /> Pay with Paystack
+            <i className="fa-brands fa-whatsapp mr-2" /> Get Secure Paystack Link
           </button>
           <p className="flex items-center justify-center gap-3 pt-1 text-[10px] uppercase tracking-[0.2em] text-foreground/50">
-            <i className="fa-solid fa-shield-halved" /> 256-bit SSL · Variant SKU mapped
+            <i className="fa-solid fa-shield-halved" /> Order confirmed only after payment
           </p>
         </form>
       </div>
