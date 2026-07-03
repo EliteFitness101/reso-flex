@@ -41,31 +41,19 @@ export default function OrderStatus() {
     async function poll() {
       if (cancelled) return;
       try {
-        const { data, error } = await supabase.functions.invoke("verify-order", {
-          method: "GET" as any,
-          // pass params via URL — supabase-js appends body only for POST/PUT
-          headers: {},
-          body: undefined,
-          // @ts-expect-error - supabase-js allows extra options
-          query: { reference, ...(token ? { token } : {}) },
+        const url = new URL(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-order`
+        );
+        url.searchParams.set("reference", reference);
+        if (token) url.searchParams.set("token", token);
+        const r = await fetch(url.toString(), {
+          headers: {
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
         });
-        // fallback: some supabase-js versions don't support `query` — do a manual fetch instead
-        let payload: OrderView | null = data as OrderView | null;
-        if (error || !payload) {
-          const url = new URL(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-order`
-          );
-          url.searchParams.set("reference", reference);
-          if (token) url.searchParams.set("token", token);
-          const r = await fetch(url.toString(), {
-            headers: {
-              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
-              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-          });
-          if (!r.ok) throw new Error(`http_${r.status}`);
-          payload = await r.json();
-        }
+        if (!r.ok) throw new Error(`http_${r.status}`);
+        const payload: OrderView = await r.json();
         if (cancelled) return;
         setOrder(payload);
         setErr(null);
