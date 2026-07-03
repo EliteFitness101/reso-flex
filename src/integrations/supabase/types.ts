@@ -14,7 +14,200 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      funnel_events: {
+        Row: {
+          amount: number | null
+          campaign: string | null
+          created_at: string
+          currency: string | null
+          event_type: string
+          funnel_origin: string | null
+          id: string
+          order_reference: string | null
+          props: Json
+          rsid: string | null
+          session_id: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          amount?: number | null
+          campaign?: string | null
+          created_at?: string
+          currency?: string | null
+          event_type: string
+          funnel_origin?: string | null
+          id?: string
+          order_reference?: string | null
+          props?: Json
+          rsid?: string | null
+          session_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          amount?: number | null
+          campaign?: string | null
+          created_at?: string
+          currency?: string | null
+          event_type?: string
+          funnel_origin?: string | null
+          id?: string
+          order_reference?: string | null
+          props?: Json
+          rsid?: string | null
+          session_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          access_token: string
+          amount: number
+          attribution: Json
+          coach_contact: string | null
+          created_at: string
+          currency: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          download_links: Json
+          fulfillment_status: string
+          id: string
+          items: Json
+          next_steps: string | null
+          paid_at: string | null
+          reference: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          access_token?: string
+          amount?: number
+          attribution?: Json
+          coach_contact?: string | null
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          download_links?: Json
+          fulfillment_status?: string
+          id?: string
+          items?: Json
+          next_steps?: string | null
+          paid_at?: string | null
+          reference: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          amount?: number
+          attribution?: Json
+          coach_contact?: string | null
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          download_links?: Json
+          fulfillment_status?: string
+          id?: string
+          items?: Json
+          next_steps?: string | null
+          paid_at?: string | null
+          reference?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          order_id: string
+          paystack_event_id: string | null
+          paystack_reference: string
+          raw: Json
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          order_id: string
+          paystack_event_id?: string | null
+          paystack_reference: string
+          raw?: Json
+          status: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          order_id?: string
+          paystack_event_id?: string | null
+          paystack_reference?: string
+          raw?: Json
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_events: {
+        Row: {
+          event_id: string
+          event_type: string
+          id: string
+          payload: Json
+          processed_at: string
+          provider: string
+          reference: string | null
+        }
+        Insert: {
+          event_id: string
+          event_type: string
+          id?: string
+          payload: Json
+          processed_at?: string
+          provider?: string
+          reference?: string | null
+        }
+        Update: {
+          event_id?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          processed_at?: string
+          provider?: string
+          reference?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

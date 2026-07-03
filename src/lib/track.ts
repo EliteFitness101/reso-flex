@@ -5,6 +5,7 @@
 
 import { sendWebhook } from "./webhook";
 import { getAttribution } from "./attribution";
+import { logFunnel } from "./funnelLog";
 
 type Props = Record<string, string | number | boolean | undefined | null>;
 
@@ -73,6 +74,9 @@ export function track(event: string, props: Props = {}) {
     if (WEBHOOK_EVENTS.has(event)) {
       sendWebhook(event, { ...props, attribution: getAttribution() });
     }
+
+    // Persist journey events to DB for Revenue OS WhatsApp report
+    logFunnel(event, props as Record<string, unknown>);
 
     if (import.meta.env.DEV) {
       console.debug("[track]", event, props);

@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import OrderStatus from "./pages/OrderStatus";
+import WhatsAppReport from "./pages/WhatsAppReport";
 
 import ProductPage from "./pages/ProductPage";
 
@@ -16,6 +18,8 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/order/:reference" element={<OrderStatus />} />
+          <Route path="/admin/whatsapp" element={<WhatsAppReport />} />
 
           {/* 🧠 AUTO PRODUCT ROUTES */}
           {productRoutes.map((r) => (
