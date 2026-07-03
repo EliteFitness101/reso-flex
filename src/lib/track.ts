@@ -5,6 +5,7 @@
 
 import { sendWebhook } from "./webhook";
 import { getAttribution } from "./attribution";
+import { logFunnel } from "./funnelLog";
 
 type Props = Record<string, string | number | boolean | undefined | null>;
 
