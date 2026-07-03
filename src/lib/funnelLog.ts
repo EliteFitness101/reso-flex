@@ -52,7 +52,7 @@ export function logFunnel(event: string, props: Record<string, unknown> = {}) {
   };
 
   // fire-and-forget
-  supabase.from("funnel_events").insert(row).then(({ error }) => {
+  supabase.from("funnel_events").insert(row as any).then(({ error }) => {
     if (error && import.meta.env.DEV) console.debug("[funnel insert]", error.message);
   });
 }
