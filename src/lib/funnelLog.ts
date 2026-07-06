@@ -3,7 +3,7 @@
 // Fire-and-forget; never blocks UI.
 
 import { supabase } from "@/integrations/supabase/client";
-import { getAttribution } from "./attribution";
+import { getAttribution, getDeviceContext } from "./attribution";
 
 const JOURNEY_EVENTS = new Set([
   "landing_page_view",
