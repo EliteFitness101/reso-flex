@@ -6,14 +6,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { getAttribution } from "./attribution";
 
 const JOURNEY_EVENTS = new Set([
+  "landing_page_view",
   "whatsapp_click",
   "assessment_started",
   "assessment_click",
+  "assessment_completed",
   "checkout_started",
   "checkout_start",
   "product_view",
   "bundle_view",
+  "payment_pending",
   "payment_success",
+  "welcome_completed",
+  "upsell_accepted",
+  "referral_joined",
 ]);
 
 function sessionId(): string {
