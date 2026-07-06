@@ -54,7 +54,7 @@ export function logFunnel(event: string, props: Record<string, unknown> = {}) {
     order_reference: (props.reference as string) ?? null,
     amount: typeof props.value === "number" ? Math.round(props.value * 100) : null,
     currency: (props.currency as string) ?? "NGN",
-    props,
+    props: { ...props, device_ctx: getDeviceContext(), referrer: (attr.referrer as string) ?? null, landing_page: (attr.landing_page as string) ?? null },
   };
 
   // fire-and-forget
