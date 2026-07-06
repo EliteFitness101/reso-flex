@@ -14,6 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          id: string
+          ip: string | null
+          meta: Json
+          resource_id: string | null
+          resource_type: string
+          result: string
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          ip?: string | null
+          meta?: Json
+          resource_id?: string | null
+          resource_type: string
+          result?: string
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          ip?: string | null
+          meta?: Json
+          resource_id?: string | null
+          resource_type?: string
+          result?: string
+        }
+        Relationships: []
+      }
+      campaign_events: {
+        Row: {
+          amount: number | null
+          campaign: string | null
+          created_at: string
+          currency: string | null
+          event_type: string
+          id: string
+          order_reference: string | null
+          props: Json
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          amount?: number | null
+          campaign?: string | null
+          created_at?: string
+          currency?: string | null
+          event_type: string
+          id?: string
+          order_reference?: string | null
+          props?: Json
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          amount?: number | null
+          campaign?: string | null
+          created_at?: string
+          currency?: string | null
+          event_type?: string
+          id?: string
+          order_reference?: string | null
+          props?: Json
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
       funnel_events: {
         Row: {
           amount: number | null
@@ -88,9 +175,12 @@ export type Database = {
           items: Json
           next_steps: string | null
           paid_at: string | null
+          processing_lock_at: string | null
           reference: string
+          referral_processed_at: string | null
           status: string
           updated_at: string
+          welcome_sent_at: string | null
         }
         Insert: {
           access_token?: string
@@ -108,9 +198,12 @@ export type Database = {
           items?: Json
           next_steps?: string | null
           paid_at?: string | null
+          processing_lock_at?: string | null
           reference: string
+          referral_processed_at?: string | null
           status?: string
           updated_at?: string
+          welcome_sent_at?: string | null
         }
         Update: {
           access_token?: string
@@ -128,9 +221,12 @@ export type Database = {
           items?: Json
           next_steps?: string | null
           paid_at?: string | null
+          processing_lock_at?: string | null
           reference?: string
+          referral_processed_at?: string | null
           status?: string
           updated_at?: string
+          welcome_sent_at?: string | null
         }
         Relationships: []
       }
@@ -178,6 +274,137 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          commission_amount: number
+          created_at: string
+          id: string
+          order_id: string
+          recruiter_code: string | null
+          recruiter_id: string | null
+          status: string
+        }
+        Insert: {
+          commission_amount?: number
+          created_at?: string
+          id?: string
+          order_id: string
+          recruiter_code?: string | null
+          recruiter_id?: string | null
+          status?: string
+        }
+        Update: {
+          commission_amount?: number
+          created_at?: string
+          id?: string
+          order_id?: string
+          recruiter_code?: string | null
+          recruiter_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reseller_leads: {
+        Row: {
+          campaign: string | null
+          commission_status: string
+          contact_history: Json
+          conversion_status: string
+          created_at: string
+          funnel_stage: string
+          id: string
+          lead_email: string | null
+          lead_name: string | null
+          lead_phone: string | null
+          recruiter_id: string | null
+          revenue_generated: number
+          updated_at: string
+        }
+        Insert: {
+          campaign?: string | null
+          commission_status?: string
+          contact_history?: Json
+          conversion_status?: string
+          created_at?: string
+          funnel_stage?: string
+          id?: string
+          lead_email?: string | null
+          lead_name?: string | null
+          lead_phone?: string | null
+          recruiter_id?: string | null
+          revenue_generated?: number
+          updated_at?: string
+        }
+        Update: {
+          campaign?: string | null
+          commission_status?: string
+          contact_history?: Json
+          conversion_status?: string
+          created_at?: string
+          funnel_stage?: string
+          id?: string
+          lead_email?: string | null
+          lead_name?: string | null
+          lead_phone?: string | null
+          recruiter_id?: string | null
+          revenue_generated?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       webhook_events: {
         Row: {
           event_id: string
@@ -213,10 +440,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      process_paystack_success: { Args: { payload: Json }; Returns: Json }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "staff" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -343,6 +577,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "staff", "user"],
+    },
   },
 } as const

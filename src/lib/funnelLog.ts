@@ -3,17 +3,23 @@
 // Fire-and-forget; never blocks UI.
 
 import { supabase } from "@/integrations/supabase/client";
-import { getAttribution } from "./attribution";
+import { getAttribution, getDeviceContext } from "./attribution";
 
 const JOURNEY_EVENTS = new Set([
+  "landing_page_view",
   "whatsapp_click",
   "assessment_started",
   "assessment_click",
+  "assessment_completed",
   "checkout_started",
   "checkout_start",
   "product_view",
   "bundle_view",
+  "payment_pending",
   "payment_success",
+  "welcome_completed",
+  "upsell_accepted",
+  "referral_joined",
 ]);
 
 function sessionId(): string {
@@ -48,7 +54,7 @@ export function logFunnel(event: string, props: Record<string, unknown> = {}) {
     order_reference: (props.reference as string) ?? null,
     amount: typeof props.value === "number" ? Math.round(props.value * 100) : null,
     currency: (props.currency as string) ?? "NGN",
-    props,
+    props: { ...props, device_ctx: getDeviceContext(), referrer: (attr.referrer as string) ?? null, landing_page: (attr.landing_page as string) ?? null },
   };
 
   // fire-and-forget

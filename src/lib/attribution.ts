@@ -45,13 +45,29 @@ export function captureAttribution(): AttributionMap {
       changed = true;
     }
   }
-  // First-touch landing page (only set once)
+  if (!stored.rsid) {
+    stored.rsid = (crypto?.randomUUID?.() || String(Date.now()) + Math.random().toString(36).slice(2)).replace(/-/g, "").slice(0, 20);
+    changed = true;
+  }
   if (!stored.landing_page) {
     stored.landing_page = url.pathname + url.search;
     changed = true;
   }
+  if (!stored.referrer && typeof document !== "undefined" && document.referrer) {
+    stored.referrer = document.referrer;
+    changed = true;
+  }
   if (changed) writeStored(stored);
   return stored;
+}
+
+/** Non-PII device context for attribution. */
+export function getDeviceContext() {
+  if (typeof navigator === "undefined") return {} as Record<string, string>;
+  const ua = navigator.userAgent || "";
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(ua);
+  const browser = /Chrome/.test(ua) ? "chrome" : /Firefox/.test(ua) ? "firefox" : /Safari/.test(ua) ? "safari" : "other";
+  return { device: isMobile ? "mobile" : "desktop", browser, lang: navigator.language };
 }
 
 export function getAttribution(): AttributionMap {

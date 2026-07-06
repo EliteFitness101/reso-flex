@@ -1,60 +1,55 @@
-// Verified order lookup for the /order/:reference page.
-// - By reference alone → returns minimal safe status (status, amount, currency, paid_at, fulfillment_status)
-// - With ?token=<access_token> → returns full order (customer info, items, download links, coach)
+// Verified order lookup for /order/:reference and /order-status/:orderId.
+// Accepts `reference` OR `orderId` (uuid). Public view = safe fields only.
+// Token param unlocks full order.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
-const admin = createClient(SUPABASE_URL, SERVICE_KEY, {
-  auth: { persistSession: false },
-});
-
-const corsHeaders = {
+const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
 };
+const json = (s: number, b: unknown) =>
+  new Response(JSON.stringify(b), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
 
-function json(status: number, body: unknown) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
 
   const url = new URL(req.url);
-  const reference = url.searchParams.get("reference")?.trim();
+  const reference = url.searchParams.get("reference")?.trim() || null;
+  const orderId = url.searchParams.get("orderId")?.trim() || null;
   const token = url.searchParams.get("token")?.trim() || null;
-  if (!reference || reference.length < 4 || reference.length > 128) {
-    return json(400, { error: "invalid_reference" });
-  }
 
-  const { data: order, error } = await admin
+  if (!reference && !orderId) return json(400, { error: "missing_identifier" });
+  if (orderId && !UUID_RE.test(orderId)) return json(400, { error: "invalid_order_id" });
+  if (reference && (reference.length < 4 || reference.length > 128)) return json(400, { error: "invalid_reference" });
+
+  let query = admin
     .from("orders")
     .select(
-      "reference, status, amount, currency, paid_at, fulfillment_status, next_steps, created_at, access_token, customer_email, customer_name, items, download_links, coach_contact"
-    )
-    .eq("reference", reference)
-    .maybeSingle();
+      "id, reference, status, amount, currency, paid_at, fulfillment_status, next_steps, created_at, access_token, customer_email, customer_name, items, download_links, coach_contact",
+    );
+  query = orderId ? query.eq("id", orderId) : query.eq("reference", reference!);
 
-  if (error) {
-    console.error("verify-order db error", error);
-    return json(500, { error: "server_error" });
-  }
+  const { data: order, error } = await query.maybeSingle();
+  if (error) { console.error(error); return json(500, { error: "server_error" }); }
+
   if (!order) {
-    // Payment might have happened but webhook not yet processed. Return pending shape.
     return json(200, {
       status: "pending",
-      reference,
+      reference: reference ?? undefined,
+      orderId: orderId ?? undefined,
       message: "Payment received. We're verifying your transaction. This usually takes a few moments.",
     });
   }
 
   const publicView = {
+    id: order.id,
     reference: order.reference,
     status: order.status,
     amount: order.amount,
