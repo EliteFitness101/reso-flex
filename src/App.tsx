@@ -16,6 +16,8 @@ const RevenueDashboard = lazy(() => import("./pages/admin/RevenueDashboard"));
 const OrdersAdmin = lazy(() => import("./pages/admin/OrdersAdmin"));
 const PaymentsAdmin = lazy(() => import("./pages/admin/PaymentsAdmin"));
 const ResellersAdmin = lazy(() => import("./pages/admin/ResellersAdmin"));
+const AttributionQA = import.meta.env.DEV ? lazy(() => import("./dev/qa/AttributionQA")) : null;
+
 
 const queryClient = new QueryClient();
 
@@ -43,7 +45,12 @@ export default function App() {
               <Route path="resellers" element={<ResellersAdmin />} />
             </Route>
 
+            {import.meta.env.DEV && AttributionQA && (
+              <Route path="/__qa/attribution" element={<AttributionQA />} />
+            )}
+
             {productRoutes.map((r) => (
+
               <Route key={r.path} path={r.path} element={r.element} />
             ))}
             <Route path="*" element={<NotFound />} />
