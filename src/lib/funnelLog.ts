@@ -32,6 +32,16 @@ function sessionId(): string {
   return w.__rf_session_id;
 }
 
+/** Dev-only in-memory subscribers for QA harness. */
+type QAListener = (evt: { event: string; row: any; ts: number }) => void;
+const qaListeners: QAListener[] = [];
+export function __devSubscribeFunnel(fn: QAListener) {
+  if (!import.meta.env.DEV) return () => {};
+  qaListeners.push(fn);
+  return () => { const i = qaListeners.indexOf(fn); if (i >= 0) qaListeners.splice(i, 1); };
+}
+export function __devGetSessionId() { return sessionId(); }
+
 export function logFunnel(event: string, props: Record<string, unknown> = {}) {
   if (typeof window === "undefined") return;
   if (!JOURNEY_EVENTS.has(event)) return;
@@ -40,6 +50,7 @@ export function logFunnel(event: string, props: Record<string, unknown> = {}) {
     event === "checkout_start" ? "checkout_started" :
     event === "assessment_click" ? "assessment_started" : event;
 
+  const dev = getDeviceContext();
   const row = {
     event_type: normalized,
     session_id: sessionId(),
@@ -54,11 +65,26 @@ export function logFunnel(event: string, props: Record<string, unknown> = {}) {
     order_reference: (props.reference as string) ?? null,
     amount: typeof props.value === "number" ? Math.round(props.value * 100) : null,
     currency: (props.currency as string) ?? "NGN",
-    props: { ...props, device_ctx: getDeviceContext(), referrer: (attr.referrer as string) ?? null, landing_page: (attr.landing_page as string) ?? null },
+    props: {
+      ...props,
+      device: dev.device,
+      browser: dev.browser,
+      language: dev.lang,
+      referrer: (attr.referrer as string) ?? null,
+      landing_page: (attr.landing_page as string) ?? null,
+      order_id: (props.order_id as string) ?? null,
+      sku: (props.sku as string) ?? null,
+      ts: new Date().toISOString(),
+    },
   };
+
+  if (import.meta.env.DEV && qaListeners.length) {
+    for (const fn of qaListeners) { try { fn({ event: normalized, row, ts: Date.now() }); } catch {} }
+  }
 
   // fire-and-forget
   supabase.from("funnel_events").insert(row as any).then(({ error }) => {
     if (error && import.meta.env.DEV) console.debug("[funnel insert]", error.message);
   });
 }
+
