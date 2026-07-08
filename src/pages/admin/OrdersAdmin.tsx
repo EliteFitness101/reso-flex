@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/admin/ui";
 import { exportCsv, exportXlsx, ngn } from "@/admin/exports";
+import { ORDERS_COLUMNS } from "@/admin/exportColumns";
+
 
 type Row = {
   id: string; reference: string; status: string; fulfillment_status: string;
@@ -63,7 +65,8 @@ export default function OrdersAdmin() {
         <h1 className="font-display text-2xl">Orders</h1>
         <div className="flex gap-2">
           <button onClick={() => exportCsv("orders", csvRows)} className="border border-border/40 px-3 py-1 text-[10px] uppercase tracking-[0.25em] hover:border-gold">CSV</button>
-          <button onClick={() => exportXlsx("orders", csvRows)} className="border border-border/40 px-3 py-1 text-[10px] uppercase tracking-[0.25em] hover:border-gold">Excel</button>
+          <button onClick={() => exportXlsx("orders", rows, { columns: ORDERS_COLUMNS, sheetName: "Orders", title: "ResoFlex Orders" })} className="border border-border/40 px-3 py-1 text-[10px] uppercase tracking-[0.25em] hover:border-gold">Excel</button>
+
         </div>
       </header>
 

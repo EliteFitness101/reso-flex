@@ -1,99 +1,109 @@
 
-# ResoFlex Revenue OS Production Patch vNext
+# ResoFlex Revenue OS — Patch vNext
 
-Extends the existing Supabase-backed architecture (orders, payments, webhook_events, funnel_events, paystack-webhook, verify-order, WhatsApp report). No UI redesign, no checkout-flow changes, no route removals. Existing `/order/:reference` stays; a new `/order-status/:orderId` route is added per spec and internally reuses the verified polling logic.
+Extends the existing implementation. No changes to checkout UI, routes, Paystack integration, RLS model, or attribution model beyond what is listed.
 
 ---
 
-## 1. Database changes (single migration)
+## 1. Admin bootstrap (migration)
 
-New tables (all with GRANTs + RLS + `has_role` gating via a new `user_roles` table):
+New migration adds:
 
-- `app_role` enum: `admin`, `staff`, `user`
-- `user_roles(user_id, role)` + `has_role(uuid, app_role)` security-definer fn
-- `reseller_leads` — lead, campaign, recruiter, stage, status, commission_status, revenue_generated
-- `referrals` — recruiter_id, order_id, commission_amount, status (unique on order_id → prevents duplicate commissions)
-- `campaign_events` — normalized campaign/UTM rollup source
-- `audit_logs` — actor, ip, action, resource_type, resource_id, result, meta (append-only, no UPDATE/DELETE policies)
-- `profiles` — display_name, phone (linked to auth.users)
+- `public.bootstrap_first_admin()` — `SECURITY DEFINER`, fixed `search_path = public`, `LANGUAGE plpgsql`.
+  - Requires `auth.uid() IS NOT NULL` (else raises).
+  - Locks `user_roles` and returns early if any row with `role = 'admin'` exists (idempotent — returns `{status:'exists'}`).
+  - Otherwise inserts `(auth.uid(), 'admin')` and writes an `audit_logs` row with `action='admin.bootstrap'`.
+  - Returns `jsonb { status, user_id }`.
+- `REVOKE ALL ON FUNCTION public.bootstrap_first_admin() FROM PUBLIC;`
+- `GRANT EXECUTE ON FUNCTION public.bootstrap_first_admin() TO authenticated;`
 
-Order table extensions:
-- `orders.processing_lock_at timestamptz` (advisory lock timestamp)
-- `orders.welcome_sent_at`, `orders.referral_processed_at` (idempotency flags for side-effects)
+Documented revocation (README section + comment on function): after first admin, run
+`REVOKE EXECUTE ON FUNCTION public.bootstrap_first_admin() FROM authenticated;` or `DROP FUNCTION public.bootstrap_first_admin();`.
 
-All public tables: explicit `GRANT`s; `service_role` full access; `authenticated` scoped by `has_role` or ownership; `anon` denied except where already public (funnel_events insert stays).
+Frontend: extend existing `src/admin/AdminLogin.tsx` (or add a small "Claim admin" button on the denied state of `AdminGate`) that calls `supabase.rpc('bootstrap_first_admin')` and refreshes the gate. No public/unauthenticated surface.
 
-## 2. RLS audit & fixes
+---
 
-Review every existing policy; replace any `USING (true)` / `WITH CHECK (true)` on mutating operations. Concretely:
+## 2. Attribution QA harness (dev-only)
 
-- `funnel_events` — keep `anon INSERT` (tracking) but tighten to `check: session_id IS NOT NULL`; block anon SELECT/UPDATE/DELETE (already the case).
-- `orders`, `payments`, `webhook_events` — no client policies; access only via edge functions using service_role.
-- New tables — admin-only via `has_role(auth.uid(),'admin')`; user-owned reads where relevant.
-- `audit_logs` — INSERT via service_role only; SELECT admin only; no UPDATE/DELETE policies.
+New file `src/dev/qa/AttributionQA.tsx` mounted only when `import.meta.env.DEV` AND URL has `?qa=1`. Route added conditionally in `App.tsx` at `/__qa/attribution` behind the same `DEV && ?qa=1` guard.
 
-Every changed policy documented inline in the migration description.
+Runs checks against:
+- `localStorage`/`sessionStorage` for RSID persistence.
+- In-memory event log (subscribes to `logFunnel` via a small dev hook in `src/lib/funnelLog.ts` — behind `if (import.meta.env.DEV)`).
+- Queries `funnel_events` for current `session_id` and validates:
+  - required fields present per row,
+  - canonical order of the 10 events (allows missing tail events, flags out-of-order),
+  - duplicates by `(event_type, session_id)` for one-shot events.
 
-## 3. Edge functions
+Renders a passed/failed/duplicates/missing-fields/ordering report. Zero footprint in production bundle: file lazy-loaded only inside a `import.meta.env.DEV` guard.
 
-- `paystack-webhook` — refactored into a single Postgres RPC `process_paystack_success(payload jsonb)` that runs in one transaction: acquires row lock on `orders` by reference, upserts order, inserts payment, inserts referral (ON CONFLICT DO NOTHING), inserts audit log, flips `welcome_sent_at`. HMAC + Paystack verify stay in the function; RPC handles atomicity + idempotency. Duplicate event_id → 200 no-op.
-- `verify-order` — extended to accept either `reference` or `orderId` (uuid). Backs the new page.
-- `admin-metrics` (new) — JWT-gated (`has_role admin`); returns dashboard aggregates with a date range.
-- `admin-export` (new) — CSV/XLSX export for orders, payments, campaigns.
-- `retry-verification` (new) — admin action; re-verifies a reference against Paystack and re-runs the RPC.
+---
 
-## 4. Frontend routes & components
+## 3. Order Status timeline
 
-New routes (all lazy-loaded):
+Extend `verify-order` edge function response with a `timeline` array derived from verified DB state only:
 
-```text
-/order-status/:orderId        → OrderStatusV2 (polling, skeletons, states)
-/admin                        → AdminLayout (nav shell, role-gated)
-  /admin (index)              → RevenueDashboard
-  /admin/orders               → OrdersAdmin
-  /admin/payments             → PaymentsAdmin
-  /admin/resellers            → ResellersAdmin
-  /admin/whatsapp             → existing WhatsAppReport (extended)
+```
+[{ key, label, at }]
 ```
 
-Shared:
-- `src/admin/AdminGate.tsx` — checks `has_role('admin')` via RPC; redirects otherwise
-- `src/admin/useRange.ts` — Today / Yesterday / 7d / 30d / custom
-- `src/admin/cards/*` — Revenue, AOV, Conversion, etc.
-- `src/admin/exports.ts` — CSV + XLSX (SheetJS) helpers
+Keys emitted in this order when their evidence exists:
+- `order_created` ← `orders.created_at`
+- `checkout_started` ← latest `funnel_events` `checkout_started` for order
+- `payment_submitted` ← latest `funnel_events` `payment_pending`
+- `webhook_received` ← earliest `webhook_events.received_at` matching reference
+- `signature_verified` ← `webhook_events.signature_valid = true`
+- `payment_verified` ← `payments.status = 'success'`
+- `order_marked_paid` ← `orders.paid_at`
+- `referral_processed` ← `orders.referral_processed_at`
+- `welcome_completed` ← `orders.welcome_sent_at`
+- `ready_for_fulfillment` ← `orders.fulfillment_status = 'processing'`
+- `fulfilled` ← `orders.fulfillment_status = 'fulfilled'`
 
-Attribution pipeline (extends `src/lib/track.ts` + `funnelLog.ts`):
-- Enrich every event with device, browser, referrer, landing_page, all UTMs, RSID, order_id, sku, user_id, ts
-- Add missing event names to the whitelist: `landing_page_view`, `assessment_completed`, `payment_pending`, `welcome_completed`, `upsell_accepted`, `referral_joined`
-- Emit `landing_page_view` from `Index.tsx` mount
-
-## 5. UI rules
-
-- No changes to Hero, ProductGrid, BundleGrid, CheckoutModal, UpsellPrompt, WelcomeOnboarding
-- All admin pages mobile-first, use existing tokens (`bg-noir-*`, `text-gold`, `border-border/*`)
-- Skeletons for loading states
-- Lazy-load every admin route via `React.lazy`
-
-## 6. Validation
-
-- `tsgo` typecheck clean
-- Production build passes
-- Manual smoke: `/order-status/:id` polls & terminal-states, admin gate blocks non-admin, funnel events land in DB
+`OrderStatusV2.tsx` renders a vertical timeline below existing rows using existing tokens/skeletons. Polling logic unchanged. Steps only show when `at` is present.
 
 ---
 
-## Technical notes
+## 4. Native XLSX export
 
-- Idempotency guarantees:
-  - Webhook: `webhook_events(provider,event_id)` unique + RPC row-lock on `orders.reference`
-  - Referral: `referrals(order_id)` unique
-  - Welcome: `orders.welcome_sent_at IS NULL` guard inside RPC
-- Admin auth: existing `ADMIN_DASHBOARD_TOKEN` retained for the current WhatsApp report; new pages use Supabase auth + `has_role`. First admin bootstrapped via a seeded `user_roles` row (documented in migration).
-- Export: `xlsx` (SheetJS) added as dep.
-- No changes to `src/integrations/supabase/client.ts` or auto-generated types beyond what the migration produces.
+Add `xlsx` (SheetJS) dependency.
 
-## Deliverables checklist
+Rewrite `src/admin/exports.ts`:
+- Keep `exportCsv` unchanged.
+- Rewrite `exportXlsx(filename, rows, opts)` to build a real `.xlsx`:
+  - Column config per sheet type (Orders, Payments, Resellers) — currency (`"₦"#,##0.00`), dates (`yyyy-mm-dd hh:mm`), auto-filter over header, frozen top row, auto-sized columns from max cell width.
+  - Workbook props: `Title`, `Author = "ResoFlex Revenue OS"`, `CreatedDate`.
+- Update `OrdersAdmin`, `PaymentsAdmin`, `ResellersAdmin` to expose both "CSV" and "XLSX" buttons using typed column configs.
 
-Files created (~25), files modified (~8), 1 migration, 3 new edge functions, 5 new routes, RLS tightened on 6 tables, attribution enriched with 12 fields, 13 dashboard cards, CSV+XLSX export, audit log table.
+---
 
-Approve to proceed with implementation in this order: migration → edge functions → admin shell + gate → dashboard → orders/payments/resellers → WhatsApp extension → order-status v2 → attribution enrichment → typecheck/build.
+## 5. Security validation
+
+Audit script + short report (no code shipped, findings addressed in the same migration where needed):
+- Run `supabase--linter` and `security--get_scan_results`.
+- Confirm RLS enabled on every public table with sensitive data (fix if not).
+- Ensure `process_paystack_success` is `REVOKE ALL ... FROM PUBLIC` + `GRANT EXECUTE ... TO service_role` only (add revoke/grant in migration if missing).
+- Confirm `has_role` remains `SECURITY DEFINER` with fixed search_path (already the case).
+- Confirm no `UPDATE`/`DELETE` policy exists on `audit_logs`.
+
+Report included in final message.
+
+---
+
+## 6. Final validation
+
+- `tsgo` typecheck.
+- Production build via existing pipeline.
+- Manual smoke: /order-status timeline renders, QA route 404s in prod build, XLSX downloads open in Excel.
+
+---
+
+## Deliverables
+
+- 1 migration (bootstrap fn + any security revokes)
+- Modified: `src/admin/exports.ts`, `src/pages/OrderStatusV2.tsx`, `supabase/functions/verify-order/index.ts`, `src/pages/admin/{OrdersAdmin,PaymentsAdmin,ResellersAdmin}.tsx`, `src/admin/AdminGate.tsx` (bootstrap CTA), `src/App.tsx` (dev-only QA route), `src/lib/funnelLog.ts` (dev subscriber), `package.json` (+ xlsx)
+- Created: `src/dev/qa/AttributionQA.tsx`, `src/admin/exportColumns.ts`
+- No changes to checkout, existing routes, Paystack webhook logic, or attribution capture.
+
+Approve to proceed.
