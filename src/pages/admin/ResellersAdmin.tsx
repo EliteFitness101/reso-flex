@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/admin/ui";
-import { exportCsv, ngn } from "@/admin/exports";
+import { exportCsv, exportXlsx, ngn } from "@/admin/exports";
+import { RESELLERS_COLUMNS } from "@/admin/exportColumns";
+
 
 type Row = {
   id: string; lead_name: string | null; lead_email: string | null; lead_phone: string | null;

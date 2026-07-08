@@ -26,7 +26,11 @@ export default function PaymentsAdmin() {
     <section className="space-y-4">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="font-display text-2xl">Payments</h1>
-        <button onClick={() => exportCsv("payments", rows as any)} className="border border-border/40 px-3 py-1 text-[10px] uppercase tracking-[0.25em] hover:border-gold">CSV</button>
+        <div className="flex gap-2">
+          <button onClick={() => exportCsv("payments", rows as any)} className="border border-border/40 px-3 py-1 text-[10px] uppercase tracking-[0.25em] hover:border-gold">CSV</button>
+          <button onClick={() => exportXlsx("payments", rows, { columns: PAYMENTS_COLUMNS, sheetName: "Payments", title: "ResoFlex Payments" })} className="border border-border/40 px-3 py-1 text-[10px] uppercase tracking-[0.25em] hover:border-gold">Excel</button>
+        </div>
+
       </header>
       <input placeholder="Search reference" value={q} onChange={e => setQ(e.target.value)}
         className="bg-noir-900 border border-border/40 px-3 py-1 text-sm w-full max-w-md" />
