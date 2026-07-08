@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/admin/ui";
-import { exportCsv, ngn } from "@/admin/exports";
+import { exportCsv, exportXlsx, ngn } from "@/admin/exports";
+import { PAYMENTS_COLUMNS } from "@/admin/exportColumns";
+
 
 type Row = {
   id: string; order_id: string; paystack_reference: string; paystack_event_id: string | null;

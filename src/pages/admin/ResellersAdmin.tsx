@@ -22,7 +22,11 @@ export default function ResellersAdmin() {
     <section className="space-y-4">
       <header className="flex items-center justify-between">
         <h1 className="font-display text-2xl">Reseller Leads</h1>
-        <button onClick={() => exportCsv("resellers", rows as any)} className="border border-border/40 px-3 py-1 text-[10px] uppercase tracking-[0.25em] hover:border-gold">CSV</button>
+        <div className="flex gap-2">
+          <button onClick={() => exportCsv("resellers", rows as any)} className="border border-border/40 px-3 py-1 text-[10px] uppercase tracking-[0.25em] hover:border-gold">CSV</button>
+          <button onClick={() => exportXlsx("resellers", rows, { columns: RESELLERS_COLUMNS, sheetName: "Resellers", title: "ResoFlex Resellers" })} className="border border-border/40 px-3 py-1 text-[10px] uppercase tracking-[0.25em] hover:border-gold">Excel</button>
+        </div>
+
       </header>
       <div className="border border-border/40 overflow-x-auto">
         <table className="w-full text-sm">
