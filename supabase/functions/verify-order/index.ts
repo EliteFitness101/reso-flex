@@ -1,6 +1,7 @@
 // Verified order lookup for /order/:reference and /order-status/:orderId.
 // Accepts `reference` OR `orderId` (uuid). Public view = safe fields only.
-// Token param unlocks full order.
+// Token param unlocks full order. Response also includes a `timeline` array
+// derived purely from verified backend state.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -17,6 +18,61 @@ const json = (s: number, b: unknown) =>
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+type TimelineStep = { key: string; label: string; at: string | null };
+
+async function buildTimeline(order: any): Promise<TimelineStep[]> {
+  const steps: TimelineStep[] = [];
+  const push = (key: string, label: string, at: string | null | undefined) => {
+    if (at) steps.push({ key, label, at: new Date(at).toISOString() });
+  };
+
+  push("order_created", "Order Created", order.created_at);
+
+  // funnel events tied to this order
+  const [{ data: fEvents }, { data: wEvents }, { data: pRows }] = await Promise.all([
+    admin.from("funnel_events")
+      .select("event_type, created_at")
+      .eq("order_reference", order.reference)
+      .in("event_type", ["checkout_started", "payment_pending", "welcome_completed", "referral_joined"])
+      .order("created_at", { ascending: true }),
+    admin.from("webhook_events")
+      .select("received_at, signature_valid, processed_at")
+      .eq("provider", "paystack")
+      .eq("resource_reference", order.reference)
+      .order("received_at", { ascending: true }),
+    admin.from("payments")
+      .select("status, created_at")
+      .eq("order_id", order.id)
+      .eq("status", "success")
+      .order("created_at", { ascending: true })
+      .limit(1),
+  ]);
+
+  const firstOf = (t: string) => fEvents?.find((e: any) => e.event_type === t)?.created_at ?? null;
+  push("checkout_started", "Checkout Started", firstOf("checkout_started"));
+  push("payment_submitted", "Payment Submitted", firstOf("payment_pending"));
+
+  const firstWebhook = wEvents?.[0];
+  push("webhook_received", "Webhook Received", firstWebhook?.received_at);
+  const validSig = wEvents?.find((e: any) => e.signature_valid === true);
+  push("signature_verified", "Signature Verified", validSig?.received_at ?? null);
+
+  push("payment_verified", "Payment Verified", pRows?.[0]?.created_at ?? null);
+  push("order_marked_paid", "Order Marked Paid", order.paid_at);
+  push("referral_processed", "Referral Processed", order.referral_processed_at);
+  push("welcome_completed", "Welcome Completed", order.welcome_sent_at);
+
+  if (order.fulfillment_status === "processing" || order.fulfillment_status === "fulfilled") {
+    // processing timestamp not tracked; use paid_at as best-effort start
+    push("ready_for_fulfillment", "Ready for Fulfillment", order.paid_at);
+  }
+  if (order.fulfillment_status === "fulfilled") {
+    push("fulfilled", "Fulfilled", order.updated_at ?? order.paid_at);
+  }
+
+  return steps;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
 
@@ -32,7 +88,7 @@ Deno.serve(async (req) => {
   let query = admin
     .from("orders")
     .select(
-      "id, reference, status, amount, currency, paid_at, fulfillment_status, next_steps, created_at, access_token, customer_email, customer_name, items, download_links, coach_contact",
+      "id, reference, status, amount, currency, paid_at, fulfillment_status, next_steps, created_at, updated_at, access_token, customer_email, customer_name, items, download_links, coach_contact, referral_processed_at, welcome_sent_at",
     );
   query = orderId ? query.eq("id", orderId) : query.eq("reference", reference!);
 
@@ -44,9 +100,13 @@ Deno.serve(async (req) => {
       status: "pending",
       reference: reference ?? undefined,
       orderId: orderId ?? undefined,
+      timeline: [],
       message: "Payment received. We're verifying your transaction. This usually takes a few moments.",
     });
   }
+
+  let timeline: TimelineStep[] = [];
+  try { timeline = await buildTimeline(order); } catch (e) { console.error("timeline", e); }
 
   const publicView = {
     id: order.id,
@@ -58,6 +118,7 @@ Deno.serve(async (req) => {
     fulfillment_status: order.fulfillment_status,
     next_steps: order.next_steps,
     created_at: order.created_at,
+    timeline,
   };
 
   const authorized = token && order.access_token && token === order.access_token;

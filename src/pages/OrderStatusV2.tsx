@@ -3,6 +3,7 @@ import { useParams, useSearchParams, Link } from "react-router-dom";
 import { Skeleton } from "@/admin/ui";
 import { ngn } from "@/admin/exports";
 
+type TimelineStep = { key: string; label: string; at: string | null };
 type OrderView = {
   id?: string; status: "pending" | "paid" | "failed" | "cancelled" | "refunded" | "expired";
   reference?: string; amount?: number; currency?: string; paid_at?: string | null;
@@ -11,11 +12,26 @@ type OrderView = {
   items?: Array<{ sku?: string; amount?: number }>;
   download_links?: Array<{ label: string; url: string }>;
   coach_contact?: string | null; message?: string;
+  timeline?: TimelineStep[];
 };
 
 const BACKOFF = [2000, 2500, 3000];
 const TIMEOUT_MS = 5 * 60 * 1000;
 const TERMINAL = new Set(["paid", "failed", "cancelled", "refunded", "expired"]);
+
+const CANONICAL_STEPS: Array<{ key: string; label: string }> = [
+  { key: "order_created", label: "Order Created" },
+  { key: "checkout_started", label: "Checkout Started" },
+  { key: "payment_submitted", label: "Payment Submitted" },
+  { key: "webhook_received", label: "Webhook Received" },
+  { key: "signature_verified", label: "Signature Verified" },
+  { key: "payment_verified", label: "Payment Verified" },
+  { key: "order_marked_paid", label: "Order Marked Paid" },
+  { key: "referral_processed", label: "Referral Processed" },
+  { key: "welcome_completed", label: "Welcome Completed" },
+  { key: "ready_for_fulfillment", label: "Ready for Fulfillment" },
+  { key: "fulfilled", label: "Fulfilled" },
+];
 
 export default function OrderStatusV2() {
   const { orderId = "" } = useParams();
@@ -57,6 +73,8 @@ export default function OrderStatusV2() {
   }, [orderId, token]);
 
   const s = statusCopy(order?.status);
+  const timeline = order?.timeline ?? [];
+  const byKey = new Map(timeline.map(t => [t.key, t]));
 
   return (
     <main className="min-h-screen bg-noir-950 px-4 py-16 text-foreground">
@@ -93,6 +111,36 @@ export default function OrderStatusV2() {
                 </div>
               )}
               {order.next_steps && <div className="border-t border-border/40 pt-4 text-sm text-foreground/80">{order.next_steps}</div>}
+            </div>
+          )}
+
+          {/* Timeline — verified backend state only */}
+          {order && (
+            <div className="mt-8 border-t border-border/40 pt-6">
+              <div className="text-[10px] uppercase tracking-[0.25em] text-foreground/50 mb-4">Progress Timeline</div>
+              {!timeline.length && !err && (
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-2/3" />
+                  <Skeleton className="h-3 w-1/2" />
+                  <Skeleton className="h-3 w-3/5" />
+                </div>
+              )}
+              {timeline.length > 0 && (
+                <ol className="relative border-l border-border/40 pl-5 space-y-4">
+                  {CANONICAL_STEPS.filter(step => byKey.has(step.key)).map(step => {
+                    const t = byKey.get(step.key)!;
+                    return (
+                      <li key={step.key} className="relative">
+                        <span className="absolute -left-[27px] top-1 grid h-3 w-3 place-items-center rounded-full bg-emerald-400/90 ring-2 ring-noir-900" />
+                        <div className="text-sm text-foreground/90">{t.label}</div>
+                        <div className="text-[10px] uppercase tracking-[0.2em] text-foreground/45 mt-0.5">
+                          {t.at ? new Date(t.at).toLocaleString() : ""}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
             </div>
           )}
 
