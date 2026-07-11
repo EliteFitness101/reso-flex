@@ -75,7 +75,8 @@ export const UpsellPrompt = ({ productSku, productName, onClose }: Props) => {
                 <div className="text-[9px] uppercase tracking-[0.2em] text-foreground/45">Add</div>
               </div>
             </a>
-          ))}
+            );
+          })}
         </div>
 
         <button
