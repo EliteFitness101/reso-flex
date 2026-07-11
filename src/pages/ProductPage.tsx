@@ -14,10 +14,11 @@ export default function ProductPage() {
   }
 
   const checkout = () => {
-    const url = getCheckoutUrl(product.slug);
+    const url = getCheckoutUrl(product.handle);
 
     if (!url) {
-      navigate("/thank-you");
+      // No direct Paystack link — route through CheckoutModal on the storefront.
+      navigate("/");
       return;
     }
 
@@ -27,7 +28,7 @@ export default function ProductPage() {
   return (
     <div style={{ padding: 20 }}>
       <h1>{product.name}</h1>
-      <p>Price: ₦{product.price.toLocaleString()}</p>
+      <p>Price: {product.priceLabel}</p>
 
       <button onClick={checkout}>
         Buy Now
