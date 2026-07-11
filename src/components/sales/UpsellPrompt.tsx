@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { suggestBundlesFor, type Bundle } from "@/data/bundles";
 import { withAttribution } from "@/lib/attribution";
+import { verifyCheckoutUrl } from "@/lib/verifyCheckoutUrl";
 import { track } from "@/lib/track";
 
 type Props = {
