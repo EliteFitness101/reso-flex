@@ -1,126 +1,82 @@
-export type ProductCategory =
-  | "digital"
-  | "physical"
-  | "bundle"
-  | "membership";
+// ============================================================
+// PRODUCT ENGINE — thin resolver layer.
+// Single source of truth: src/data/products.ts (+ src/data/bundles.ts).
+// Do NOT define products, prices, or Paystack URLs here.
+// ============================================================
 
-export interface Product {
+import { PRODUCTS, type Product } from "@/data/products";
+import {
+  BUNDLES,
+  suggestBundlesFor,
+  type Bundle,
+} from "@/data/bundles";
+import { verifyCheckoutUrl } from "@/lib/verifyCheckoutUrl";
+
+export type { Product, Bundle };
+
+// -------- Product lookups (derive from PRODUCTS) -------------
+export const getAllProducts = (): Product[] => PRODUCTS;
+
+export const getProduct = (idOrHandle: string): Product | undefined =>
+  PRODUCTS.find((p) => p.id === idOrHandle || p.handle === idOrHandle);
+
+export const getProductBySlug = (slug: string): Product | undefined =>
+  PRODUCTS.find((p) => p.handle === slug);
+
+export const getProductById = (id: string): Product | undefined =>
+  PRODUCTS.find((p) => p.id === id);
+
+export const getProductBySku = (sku: string): Product | undefined =>
+  PRODUCTS.find((p) => p.sku === sku);
+
+export const getFeaturedProducts = (): Product[] =>
+  PRODUCTS.filter((p) => p.popular);
+
+export const getFreeProducts = (): Product[] =>
+  PRODUCTS.filter((p) => p.free || p.now === 0);
+
+// -------- Bundle lookups (derive from BUNDLES) ---------------
+export const getBundles = (): Bundle[] => BUNDLES;
+export const getBundleBySku = (sku: string): Bundle | undefined =>
+  BUNDLES.find((b) => b.sku === sku);
+export const getBundleSuggestionsFor = (sku: string): Bundle[] =>
+  suggestBundlesFor(sku);
+
+// -------- Checkout resolution --------------------------------
+// PRODUCTS are sold through CheckoutModal (WhatsApp handoff → Paystack link
+// issued server-side). BUNDLES ship with a direct paystackUrl. This helper
+// resolves a validated URL only when one exists.
+export const getCheckoutUrl = (idOrHandleOrSku: string): string | null => {
+  const bundle = BUNDLES.find(
+    (b) => b.id === idOrHandleOrSku || b.sku === idOrHandleOrSku,
+  );
+  if (bundle?.paystackUrl) return verifyCheckoutUrl(bundle.paystackUrl);
+
+  const product = getProduct(idOrHandleOrSku) ?? getProductBySku(idOrHandleOrSku);
+  if (!product) return null;
+  if (product.free || product.now === 0) return null;
+
+  // Physical/digital products route through CheckoutModal — no direct URL.
+  return null;
+};
+
+// -------- Legacy compatibility shim --------------------------
+// Older code paths (deployment guard, auto-generated routes) expect a flat
+// array. Derive it so we never maintain a second catalog.
+export interface LegacyCoreProduct {
   id: string;
   slug: string;
   name: string;
-  category: ProductCategory;
   price: number;
   paystackUrl: string | null;
-  image?: string;
-  featured?: boolean;
-  isFree?: boolean;
+  isFree: boolean;
 }
 
-/**
- * 🧠 SINGLE SOURCE OF TRUTH
- */
-export const CORE_PRODUCTS: Product[] = [
-  {
-    id: "naijafit-tier2",
-    slug: "naijafit-tier2-5000",
-    name: "NaijaFit™ Enhanced Wellness Plan",
-    category: "digital",
-    price: 5000,
-    paystackUrl: "https://paystack.shop/pay/naijafit-5000",
-    featured: true,
-  },
-  {
-    id: "fitness-evolution",
-    slug: "fitness-evolution",
-    name: "Fitness Evolution™",
-    category: "digital",
-    price: 15000,
-    paystackUrl: "https://paystack.shop/pay/fitness-evolution",
-  },
-  {
-    id: "heritage-meal",
-    slug: "heritage-meal",
-    name: "Heritage Meal Protocol",
-    category: "digital",
-    price: 3500,
-    paystackUrl: "https://paystack.shop/pay/heritage-meal",
-  },
-  {
-    id: "buttgrowthb2k",
-    slug: "buttgrowthb2k",
-    name: "Butt Growth B2K",
-    category: "digital",
-    price: 15000,
-    paystackUrl: "https://paystack.shop/pay/buttgrowthb2k",
-  },
-
-  // RESOFLEX
-  {
-    id: "rf-blue",
-    slug: "rf-expansion-module-blue",
-    name: "ResoFlex Expansion Module — Blue",
-    category: "digital",
-    price: 25000,
-    paystackUrl: "https://paystack.shop/pay/rf-expansion-blue",
-  },
-  {
-    id: "rf-duo",
-    slug: "rf-expansion-module-duo",
-    name: "ResoFlex Expansion Module — Duo",
-    category: "digital",
-    price: 45000,
-    paystackUrl: "https://paystack.shop/pay/rf-expansion-duo",
-  },
-  {
-    id: "rf-coach",
-    slug: "rf-elite-coaching-30day",
-    name: "ResoFlex Elite 30-Day Coaching",
-    category: "digital",
-    price: 15000,
-    paystackUrl: "https://paystack.shop/pay/rf-coaching-30",
-  },
-  {
-    id: "rf-blueprint",
-    slug: "rf-90day-metabolic-blueprint",
-    name: "90-Day Metabolic Blueprint",
-    category: "digital",
-    price: 0,
-    paystackUrl: null,
-    isFree: true,
-  },
-
-  // B2K
-  {
-    id: "b2k-starter",
-    slug: "buttgrowthb2k-starter",
-    name: "B2K Starter Kit",
-    category: "digital",
-    price: 5000,
-    paystackUrl: "https://paystack.shop/pay/b2k-starter",
-  },
-  {
-    id: "b2k-core",
-    slug: "buttgrowthb2k-core",
-    name: "B2K Core System",
-    category: "digital",
-    price: 12000,
-    paystackUrl: "https://paystack.shop/pay/b2k-core",
-  },
-  {
-    id: "b2k-pro",
-    slug: "buttgrowthb2k-pro",
-    name: "B2K Pro Sculpt System",
-    category: "digital",
-    price: 25000,
-    paystackUrl: "https://paystack.shop/pay/b2k-pro",
-  },
-  {
-    id: "b2k-elite",
-    slug: "buttgrowthb2k-elite",
-    name: "B2K Elite 90-Day Transformation",
-    category: "bundle",
-    price: 50000,
-    paystackUrl: "https://paystack.shop/pay/b2k-elite",
-    featured: true,
-  },
-];
+export const CORE_PRODUCTS: LegacyCoreProduct[] = PRODUCTS.map((p) => ({
+  id: p.id,
+  slug: p.handle,
+  name: p.name,
+  price: p.now,
+  paystackUrl: null, // resolved on-demand via CheckoutModal
+  isFree: Boolean(p.free) || p.now === 0,
+}));
