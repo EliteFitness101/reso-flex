@@ -1,62 +1,35 @@
-import { CORE_PRODUCTS } from "@/core/product.engine";
+import { PRODUCTS } from "@/data/products";
 
 /**
  * Deployment Safety Guard
- * Run before build or CI
+ * Validates the single product catalog (src/data/products.ts).
  */
 
 export const validateDeployment = () => {
   console.log("🔍 Running deployment validation...");
-
-  validateUniqueSlugs();
-  validatePaystackIntegrity();
+  validateUniqueHandles();
+  validateUniqueSkus();
   validateFreeProducts();
-
   console.log("✅ Deployment validation passed");
 };
 
-/**
- * 1. SLUG UNIQUENESS
- */
-const validateUniqueSlugs = () => {
-  const slugs = CORE_PRODUCTS.map((p) => p.slug);
-  const duplicates = slugs.filter(
-    (slug, i) => slugs.indexOf(slug) !== i
-  );
-
-  if (duplicates.length > 0) {
-    throw new Error(
-      `❌ Duplicate slugs detected: ${duplicates.join(", ")}`
-    );
-  }
+const validateUniqueHandles = () => {
+  const handles = PRODUCTS.map((p) => p.handle);
+  const dup = handles.filter((h, i) => handles.indexOf(h) !== i);
+  if (dup.length) throw new Error(`❌ Duplicate handles: ${dup.join(", ")}`);
 };
 
-/**
- * 2. PAYSTACK VALIDATION
- */
-const validatePaystackIntegrity = () => {
-  const invalid = CORE_PRODUCTS.filter(
-    (p) => !p.isFree && !p.paystackUrl
-  );
-
-  if (invalid.length > 0) {
-    throw new Error(
-      `❌ Missing Paystack URLs: ${invalid.map(p => p.id).join(", ")}`
-    );
-  }
+const validateUniqueSkus = () => {
+  const skus = PRODUCTS.map((p) => p.sku);
+  const dup = skus.filter((s, i) => skus.indexOf(s) !== i);
+  if (dup.length) throw new Error(`❌ Duplicate SKUs: ${dup.join(", ")}`);
 };
 
-/**
- * 3. FREE PRODUCT SAFETY
- */
 const validateFreeProducts = () => {
-  const invalidFree = CORE_PRODUCTS.filter(
-    (p) => p.isFree && p.paystackUrl !== null
-  );
-
-  if (invalidFree.length > 0) {
+  const invalid = PRODUCTS.filter((p) => p.free && p.now !== 0);
+  if (invalid.length) {
     throw new Error(
-      `❌ Free products must NOT have Paystack URLs`
+      `❌ Free products must have now=0: ${invalid.map((p) => p.id).join(", ")}`,
     );
   }
 };
