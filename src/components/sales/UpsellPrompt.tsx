@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { suggestBundlesFor, type Bundle } from "@/data/bundles";
 import { withAttribution } from "@/lib/attribution";
+import { verifyCheckoutUrl } from "@/lib/verifyCheckoutUrl";
 import { track } from "@/lib/track";
 
 type Props = {
@@ -41,10 +42,13 @@ export const UpsellPrompt = ({ productSku, productName, onClose }: Props) => {
         </div>
 
         <div className="mt-5 space-y-3">
-          {suggestions.map((s) => (
+          {suggestions.map((s) => {
+            const safe = verifyCheckoutUrl(s.paystackUrl);
+            if (!safe) return null;
+            return (
             <a
               key={s.id}
-              href={withAttribution(s.paystackUrl)}
+              href={withAttribution(safe)}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() =>
@@ -71,7 +75,8 @@ export const UpsellPrompt = ({ productSku, productName, onClose }: Props) => {
                 <div className="text-[9px] uppercase tracking-[0.2em] text-foreground/45">Add</div>
               </div>
             </a>
-          ))}
+            );
+          })}
         </div>
 
         <button

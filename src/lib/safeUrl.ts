@@ -13,6 +13,7 @@ const ALLOWED_HOSTS = [
   "api.whatsapp.com",
   "paystack.com",
   "checkout.paystack.com",
+  "paystack.shop",
 ];
 
 export function safeExternalUrl(input?: string | null, fallback: string = FALLBACK): string {
