@@ -42,10 +42,13 @@ export const UpsellPrompt = ({ productSku, productName, onClose }: Props) => {
         </div>
 
         <div className="mt-5 space-y-3">
-          {suggestions.map((s) => (
+          {suggestions.map((s) => {
+            const safe = verifyCheckoutUrl(s.paystackUrl);
+            if (!safe) return null;
+            return (
             <a
               key={s.id}
-              href={withAttribution(s.paystackUrl)}
+              href={withAttribution(safe)}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() =>
