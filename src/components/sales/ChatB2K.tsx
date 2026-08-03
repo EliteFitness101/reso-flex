@@ -239,10 +239,29 @@ export const ChatB2K = ({ open, onClose }: { open: boolean; onClose: () => void 
     const node = TREE[opt.next];
     if (!node) return;
     pushBot({ role: "bot", text: node.text, options: node.options, cta: node.cta });
+
+    if (opt.next.startsWith("goal_")) {
+      writeMemory({ goal: opt.next.replace("goal_", "") });
+      logChatEvent("assessment_started", { goal: opt.next.replace("goal_", ""), choice: opt.label });
+    }
+
     if (opt.next.startsWith("rec_")) {
       track("chatb2k_recommendation", { node: opt.next });
+      const goal = readMemory().goal;
+      const skus = (node.cta ?? [])
+        .map((c) => (c as any).sku as string | undefined)
+        .filter(Boolean) as string[];
+      logChatEvent("assessment_completed", { goal, node: opt.next });
+      persistRecommendation({
+        goal,
+        answers: { node: opt.next, path: opt.label },
+        products: (skus.length ? skus : [opt.next]).map((sku, i) => ({ sku, score: 1 - i * 0.1 })),
+        confidence: skus.length ? 0.85 : 0.6,
+        upsell: skus.length > 1 ? 0.7 : 0.4,
+      });
     }
   };
+
 
   const send = (text: string) => {
     if (!text.trim()) return;
