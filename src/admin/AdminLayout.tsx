@@ -5,9 +5,13 @@ const links = [
   { to: "/admin", end: true, label: "Dashboard" },
   { to: "/admin/orders", label: "Orders" },
   { to: "/admin/payments", label: "Payments" },
+  { to: "/admin/inventory", label: "Inventory" },
+  { to: "/admin/fulfillment", label: "Fulfillment" },
+  { to: "/admin/chatb2k", label: "ChatB2K" },
   { to: "/admin/resellers", label: "Resellers" },
   { to: "/admin/whatsapp", label: "WhatsApp" },
 ];
+
 
 export default function AdminLayout() {
   return (
