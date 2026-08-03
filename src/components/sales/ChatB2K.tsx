@@ -2,6 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { track } from "@/lib/track";
 import { waUrl } from "@/lib/waScript";
 import { bumpIntent, lockFunnel } from "@/lib/funnelLock";
+import {
+  logChatEvent,
+  persistRecommendation,
+  readMemory,
+  writeMemory,
+} from "@/chatb2k/memory";
+
 
 const WA_URL = waUrl({ source: "chatb2k" });
 
