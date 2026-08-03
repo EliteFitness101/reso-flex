@@ -16,6 +16,10 @@ const RevenueDashboard = lazy(() => import("./pages/admin/RevenueDashboard"));
 const OrdersAdmin = lazy(() => import("./pages/admin/OrdersAdmin"));
 const PaymentsAdmin = lazy(() => import("./pages/admin/PaymentsAdmin"));
 const ResellersAdmin = lazy(() => import("./pages/admin/ResellersAdmin"));
+const InventoryAdmin = lazy(() => import("./pages/admin/InventoryAdmin"));
+const FulfillmentAdmin = lazy(() => import("./pages/admin/FulfillmentAdmin"));
+const ChatB2KAdmin = lazy(() => import("./pages/admin/ChatB2KAdmin"));
+
 const AttributionQA = import.meta.env.DEV ? lazy(() => import("./dev/qa/AttributionQA")) : null;
 
 
