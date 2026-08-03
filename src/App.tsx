@@ -47,6 +47,10 @@ export default function App() {
               <Route path="orders" element={<OrdersAdmin />} />
               <Route path="payments" element={<PaymentsAdmin />} />
               <Route path="resellers" element={<ResellersAdmin />} />
+              <Route path="inventory" element={<InventoryAdmin />} />
+              <Route path="fulfillment" element={<FulfillmentAdmin />} />
+              <Route path="chatb2k" element={<ChatB2KAdmin />} />
+
             </Route>
 
             {import.meta.env.DEV && AttributionQA && (
