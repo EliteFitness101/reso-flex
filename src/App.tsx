@@ -16,6 +16,10 @@ const RevenueDashboard = lazy(() => import("./pages/admin/RevenueDashboard"));
 const OrdersAdmin = lazy(() => import("./pages/admin/OrdersAdmin"));
 const PaymentsAdmin = lazy(() => import("./pages/admin/PaymentsAdmin"));
 const ResellersAdmin = lazy(() => import("./pages/admin/ResellersAdmin"));
+const InventoryAdmin = lazy(() => import("./pages/admin/InventoryAdmin"));
+const FulfillmentAdmin = lazy(() => import("./pages/admin/FulfillmentAdmin"));
+const ChatB2KAdmin = lazy(() => import("./pages/admin/ChatB2KAdmin"));
+
 const AttributionQA = import.meta.env.DEV ? lazy(() => import("./dev/qa/AttributionQA")) : null;
 
 
@@ -43,6 +47,10 @@ export default function App() {
               <Route path="orders" element={<OrdersAdmin />} />
               <Route path="payments" element={<PaymentsAdmin />} />
               <Route path="resellers" element={<ResellersAdmin />} />
+              <Route path="inventory" element={<InventoryAdmin />} />
+              <Route path="fulfillment" element={<FulfillmentAdmin />} />
+              <Route path="chatb2k" element={<ChatB2KAdmin />} />
+
             </Route>
 
             {import.meta.env.DEV && AttributionQA && (
