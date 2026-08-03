@@ -101,6 +101,161 @@ export type Database = {
         }
         Relationships: []
       }
+      chatb2k_events: {
+        Row: {
+          campaign: string | null
+          created_at: string
+          event_type: string
+          funnel_origin: string | null
+          id: string
+          order_reference: string | null
+          props: Json
+          rsid: string | null
+          session_id: string
+        }
+        Insert: {
+          campaign?: string | null
+          created_at?: string
+          event_type: string
+          funnel_origin?: string | null
+          id?: string
+          order_reference?: string | null
+          props?: Json
+          rsid?: string | null
+          session_id: string
+        }
+        Update: {
+          campaign?: string | null
+          created_at?: string
+          event_type?: string
+          funnel_origin?: string | null
+          id?: string
+          order_reference?: string | null
+          props?: Json
+          rsid?: string | null
+          session_id?: string
+        }
+        Relationships: []
+      }
+      collections: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          meta_description: string | null
+          og_image: string | null
+          seo_title: string | null
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          meta_description?: string | null
+          og_image?: string | null
+          seo_title?: string | null
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          meta_description?: string | null
+          og_image?: string | null
+          seo_title?: string | null
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      countries: {
+        Row: {
+          created_at: string
+          default_currency: string
+          id: string
+          is_active: boolean
+          iso2: string
+          name: string
+          region_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_currency?: string
+          id?: string
+          is_active?: boolean
+          iso2: string
+          name: string
+          region_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_currency?: string
+          id?: string
+          is_active?: boolean
+          iso2?: string
+          name?: string
+          region_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "countries_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      currency_routes: {
+        Row: {
+          country_iso2: string
+          created_at: string
+          currency: string
+          fulfillment_hub: string | null
+          gateway_code: string
+          id: string
+          is_active: boolean
+          region_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          country_iso2: string
+          created_at?: string
+          currency: string
+          fulfillment_hub?: string | null
+          gateway_code: string
+          id?: string
+          is_active?: boolean
+          region_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          country_iso2?: string
+          created_at?: string
+          currency?: string
+          fulfillment_hub?: string | null
+          gateway_code?: string
+          id?: string
+          is_active?: boolean
+          region_code?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       funnel_events: {
         Row: {
           amount: number | null
@@ -157,6 +312,91 @@ export type Database = {
           utm_term?: string | null
         }
         Relationships: []
+      }
+      inventory_ledger: {
+        Row: {
+          change_qty: number
+          created_at: string
+          id: string
+          meta: Json
+          order_id: string | null
+          reason: string
+          variant_sku: string
+        }
+        Insert: {
+          change_qty: number
+          created_at?: string
+          id?: string
+          meta?: Json
+          order_id?: string | null
+          reason: string
+          variant_sku: string
+        }
+        Update: {
+          change_qty?: number
+          created_at?: string
+          id?: string
+          meta?: Json
+          order_id?: string | null
+          reason?: string
+          variant_sku?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_ledger_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          invoice_number: string
+          issued_at: string
+          meta: Json
+          order_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_number: string
+          issued_at?: string
+          meta?: Json
+          order_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_number?: string
+          issued_at?: string
+          meta?: Json
+          order_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       orders: {
         Row: {
@@ -230,6 +470,122 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_events: {
+        Row: {
+          amount: number | null
+          created_at: string
+          currency: string | null
+          event_type: string
+          external_event_id: string | null
+          gateway_code: string
+          id: string
+          order_id: string | null
+          payload: Json
+          reference: string | null
+          signature_valid: boolean | null
+          status: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          event_type: string
+          external_event_id?: string | null
+          gateway_code: string
+          id?: string
+          order_id?: string | null
+          payload?: Json
+          reference?: string | null
+          signature_valid?: boolean | null
+          status?: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          event_type?: string
+          external_event_id?: string | null
+          gateway_code?: string
+          id?: string
+          order_id?: string | null
+          payload?: Json
+          reference?: string | null
+          signature_valid?: boolean | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_gateways: {
+        Row: {
+          code: string
+          config: Json
+          created_at: string
+          display_name: string
+          id: string
+          is_active: boolean
+          priority: number
+          supports_currencies: string[]
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          config?: Json
+          created_at?: string
+          display_name: string
+          id?: string
+          is_active?: boolean
+          priority?: number
+          supports_currencies?: string[]
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          config?: Json
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_active?: boolean
+          priority?: number
+          supports_currencies?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payment_idempotency: {
+        Row: {
+          created_at: string
+          gateway_code: string
+          id: string
+          idempotency_key: string
+          reference: string | null
+          result: Json
+        }
+        Insert: {
+          created_at?: string
+          gateway_code: string
+          id?: string
+          idempotency_key: string
+          reference?: string | null
+          result?: Json
+        }
+        Update: {
+          created_at?: string
+          gateway_code?: string
+          id?: string
+          idempotency_key?: string
+          reference?: string | null
+          result?: Json
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -274,6 +630,108 @@ export type Database = {
           },
         ]
       }
+      permissions: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      product_assets: {
+        Row: {
+          alt_text: string | null
+          asset_type: string
+          created_at: string
+          id: string
+          is_public: boolean
+          product_sku: string
+          sort_order: number
+          updated_at: string
+          url: string
+          variant_sku: string | null
+        }
+        Insert: {
+          alt_text?: string | null
+          asset_type?: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          product_sku: string
+          sort_order?: number
+          updated_at?: string
+          url: string
+          variant_sku?: string | null
+        }
+        Update: {
+          alt_text?: string | null
+          asset_type?: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          product_sku?: string
+          sort_order?: number
+          updated_at?: string
+          url?: string
+          variant_sku?: string | null
+        }
+        Relationships: []
+      }
+      product_variants: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          inventory_qty: number
+          is_active: boolean
+          options: Json
+          price: number
+          product_sku: string
+          title: string
+          updated_at: string
+          variant_sku: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          inventory_qty?: number
+          is_active?: boolean
+          options?: Json
+          price?: number
+          product_sku: string
+          title: string
+          updated_at?: string
+          variant_sku: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          inventory_qty?: number
+          is_active?: boolean
+          options?: Json
+          price?: number
+          product_sku?: string
+          title?: string
+          updated_at?: string
+          variant_sku?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -295,6 +753,45 @@ export type Database = {
           id?: string
           phone?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      recommendation_results: {
+        Row: {
+          answers: Json
+          confidence_score: number
+          created_at: string
+          engine_version: string
+          goal: string | null
+          id: string
+          recommended_products: Json
+          session_id: string
+          upsell_score: number
+          user_id: string | null
+        }
+        Insert: {
+          answers?: Json
+          confidence_score?: number
+          created_at?: string
+          engine_version?: string
+          goal?: string | null
+          id?: string
+          recommended_products?: Json
+          session_id: string
+          upsell_score?: number
+          user_id?: string | null
+        }
+        Update: {
+          answers?: Json
+          confidence_score?: number
+          created_at?: string
+          engine_version?: string
+          goal?: string | null
+          id?: string
+          recommended_products?: Json
+          session_id?: string
+          upsell_score?: number
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -335,6 +832,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      regions: {
+        Row: {
+          code: string
+          created_at: string
+          fulfillment_hub: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          fulfillment_hub?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          fulfillment_hub?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       reseller_leads: {
         Row: {
@@ -383,6 +910,35 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          created_at: string
+          id: string
+          permission_code: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          permission_code: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          permission_code?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_code_fkey"
+            columns: ["permission_code"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["code"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -441,6 +997,10 @@ export type Database = {
     }
     Functions: {
       bootstrap_first_admin: { Args: never; Returns: Json }
+      has_permission: {
+        Args: { _permission: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
