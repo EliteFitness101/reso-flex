@@ -8,6 +8,14 @@ import {
   readMemory,
   writeMemory,
 } from "@/chatb2k/memory";
+import { recommendProducts, type Goal } from "@/chatb2k/recommend";
+
+const GOAL_MAP: Record<string, Goal | undefined> = {
+  fat: "fat_loss",
+  curve: "muscle_building",
+  strength: "strength",
+  cardio: "longevity",
+};
 
 
 const WA_URL = waUrl({ source: "chatb2k" });
@@ -266,6 +274,27 @@ export const ChatB2K = ({ open, onClose }: { open: boolean; onClose: () => void 
         confidence: skus.length ? 0.85 : 0.6,
         upsell: skus.length > 1 ? 0.7 : 0.4,
       });
+
+      // Personalized catalog matches (goal + experience aware).
+      const experience = /beginner/i.test(opt.label)
+        ? "beginner"
+        : /advanced|elite/i.test(opt.label)
+          ? "advanced"
+          : "intermediate";
+      recommendProducts({ goal: GOAL_MAP[goal ?? ""], experience, limit: 3 })
+        .then((recs) => {
+          if (!recs.length) return;
+          pushBot({
+            role: "bot",
+            text:
+              "Matched from the live catalog:\n" +
+              recs
+                .map((r) => `**${r.product.name}** — ₦${r.product.price_ngn.toLocaleString("en-NG")} · ${r.reason}`)
+                .join("\n"),
+            cta: [{ label: "View Store", href: "#products" }, { label: "Restart", href: "#restart" }],
+          });
+        })
+        .catch(() => {});
     }
   };
 
