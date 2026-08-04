@@ -5,10 +5,13 @@ const links = [
   { to: "/admin", end: true, label: "Dashboard" },
   { to: "/admin/orders", label: "Orders" },
   { to: "/admin/payments", label: "Payments" },
+  { to: "/admin/catalog", label: "Catalog" },
+  { to: "/admin/media", label: "Media" },
   { to: "/admin/inventory", label: "Inventory" },
   { to: "/admin/fulfillment", label: "Fulfillment" },
   { to: "/admin/chatb2k", label: "ChatB2K" },
   { to: "/admin/resellers", label: "Resellers" },
+  { to: "/admin/security", label: "Security" },
   { to: "/admin/whatsapp", label: "WhatsApp" },
 ];
 

@@ -4,8 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "bunx tsx scripts/generate-sitemap.ts",
     "dev": "vite",
+    "prebuild": "bunx tsx scripts/generate-sitemap.ts",
     "build": "vite build",
+    "smoke": "bunx tsx scripts/production-smoke-test.ts",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
