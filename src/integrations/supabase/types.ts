@@ -101,6 +101,45 @@ export type Database = {
         }
         Relationships: []
       }
+      catalog_sync_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json
+          entity: string
+          id: string
+          result: string
+          rows_failed: number
+          rows_processed: number
+          source: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          entity: string
+          id?: string
+          result?: string
+          rows_failed?: number
+          rows_processed?: number
+          source: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          entity?: string
+          id?: string
+          result?: string
+          rows_failed?: number
+          rows_processed?: number
+          source?: string
+        }
+        Relationships: []
+      }
       chatb2k_events: {
         Row: {
           campaign: string | null
@@ -139,43 +178,73 @@ export type Database = {
       }
       collections: {
         Row: {
+          chatb2k_priority: number
+          collection_code: string | null
           created_at: string
           description: string | null
+          featured_products: string[]
+          hero_banner: string | null
           id: string
           is_active: boolean
+          landing_page_slug: string | null
           meta_description: string | null
           og_image: string | null
+          parent_collection: string | null
           seo_title: string | null
+          shopify_collection_id: string | null
           slug: string
           sort_order: number
+          thumbnail_image: string | null
           title: string
+          type: string | null
           updated_at: string
+          visibility: string
         }
         Insert: {
+          chatb2k_priority?: number
+          collection_code?: string | null
           created_at?: string
           description?: string | null
+          featured_products?: string[]
+          hero_banner?: string | null
           id?: string
           is_active?: boolean
+          landing_page_slug?: string | null
           meta_description?: string | null
           og_image?: string | null
+          parent_collection?: string | null
           seo_title?: string | null
+          shopify_collection_id?: string | null
           slug: string
           sort_order?: number
+          thumbnail_image?: string | null
           title: string
+          type?: string | null
           updated_at?: string
+          visibility?: string
         }
         Update: {
+          chatb2k_priority?: number
+          collection_code?: string | null
           created_at?: string
           description?: string | null
+          featured_products?: string[]
+          hero_banner?: string | null
           id?: string
           is_active?: boolean
+          landing_page_slug?: string | null
           meta_description?: string | null
           og_image?: string | null
+          parent_collection?: string | null
           seo_title?: string | null
+          shopify_collection_id?: string | null
           slug?: string
           sort_order?: number
+          thumbnail_image?: string | null
           title?: string
+          type?: string | null
           updated_at?: string
+          visibility?: string
         }
         Relationships: []
       }
@@ -655,43 +724,98 @@ export type Database = {
         Row: {
           alt_text: string | null
           asset_type: string
+          cdn_url: string | null
           created_at: string
+          file_name: string | null
+          file_size_kb: number | null
+          format: string | null
+          height: number | null
           id: string
+          is_hero: boolean
           is_public: boolean
+          open_graph_asset: boolean
           product_sku: string
+          relative_path: string | null
+          seo_title: string | null
           sort_order: number
           updated_at: string
           url: string
           variant_sku: string | null
+          width: number | null
         }
         Insert: {
           alt_text?: string | null
           asset_type?: string
+          cdn_url?: string | null
           created_at?: string
+          file_name?: string | null
+          file_size_kb?: number | null
+          format?: string | null
+          height?: number | null
           id?: string
+          is_hero?: boolean
           is_public?: boolean
+          open_graph_asset?: boolean
           product_sku: string
+          relative_path?: string | null
+          seo_title?: string | null
           sort_order?: number
           updated_at?: string
           url: string
           variant_sku?: string | null
+          width?: number | null
         }
         Update: {
           alt_text?: string | null
           asset_type?: string
+          cdn_url?: string | null
           created_at?: string
+          file_name?: string | null
+          file_size_kb?: number | null
+          format?: string | null
+          height?: number | null
           id?: string
+          is_hero?: boolean
           is_public?: boolean
+          open_graph_asset?: boolean
           product_sku?: string
+          relative_path?: string | null
+          seo_title?: string | null
           sort_order?: number
           updated_at?: string
           url?: string
           variant_sku?: string | null
+          width?: number | null
+        }
+        Relationships: []
+      }
+      product_collection_mappings: {
+        Row: {
+          collection_code: string
+          created_at: string
+          display_order: number
+          id: string
+          product_sku: string
+        }
+        Insert: {
+          collection_code: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          product_sku: string
+        }
+        Update: {
+          collection_code?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          product_sku?: string
         }
         Relationships: []
       }
       product_variants: {
         Row: {
+          color: string | null
           created_at: string
           currency: string
           id: string
@@ -700,11 +824,15 @@ export type Database = {
           options: Json
           price: number
           product_sku: string
+          size: string | null
+          status: string
+          stock_level: number
           title: string
           updated_at: string
           variant_sku: string
         }
         Insert: {
+          color?: string | null
           created_at?: string
           currency?: string
           id?: string
@@ -713,11 +841,15 @@ export type Database = {
           options?: Json
           price?: number
           product_sku: string
+          size?: string | null
+          status?: string
+          stock_level?: number
           title: string
           updated_at?: string
           variant_sku: string
         }
         Update: {
+          color?: string | null
           created_at?: string
           currency?: string
           id?: string
@@ -726,9 +858,102 @@ export type Database = {
           options?: Json
           price?: number
           product_sku?: string
+          size?: string | null
+          status?: string
+          stock_level?: number
           title?: string
           updated_at?: string
           variant_sku?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          bulk_price_ngn: number | null
+          bulk_threshold: number | null
+          category: string | null
+          chatb2k_enabled: boolean
+          checkout_url: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          digital_product: boolean
+          experience_levels: string[]
+          goals: string[]
+          handle: string | null
+          hero_image_asset: string | null
+          id: string
+          meta_description: string | null
+          name: string
+          open_graph_image: string | null
+          price_ngn: number
+          recommendation_priority: number
+          requires_shipping: boolean
+          seo_title: string | null
+          shopify_product_id: string | null
+          sku: string
+          status: string
+          sub_assets: Json
+          tagline: string | null
+          updated_at: string
+        }
+        Insert: {
+          bulk_price_ngn?: number | null
+          bulk_threshold?: number | null
+          category?: string | null
+          chatb2k_enabled?: boolean
+          checkout_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          digital_product?: boolean
+          experience_levels?: string[]
+          goals?: string[]
+          handle?: string | null
+          hero_image_asset?: string | null
+          id?: string
+          meta_description?: string | null
+          name: string
+          open_graph_image?: string | null
+          price_ngn?: number
+          recommendation_priority?: number
+          requires_shipping?: boolean
+          seo_title?: string | null
+          shopify_product_id?: string | null
+          sku: string
+          status?: string
+          sub_assets?: Json
+          tagline?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bulk_price_ngn?: number | null
+          bulk_threshold?: number | null
+          category?: string | null
+          chatb2k_enabled?: boolean
+          checkout_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          digital_product?: boolean
+          experience_levels?: string[]
+          goals?: string[]
+          handle?: string | null
+          hero_image_asset?: string | null
+          id?: string
+          meta_description?: string | null
+          name?: string
+          open_graph_image?: string | null
+          price_ngn?: number
+          recommendation_priority?: number
+          requires_shipping?: boolean
+          seo_title?: string | null
+          shopify_product_id?: string | null
+          sku?: string
+          status?: string
+          sub_assets?: Json
+          tagline?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -997,6 +1222,9 @@ export type Database = {
     }
     Functions: {
       bootstrap_first_admin: { Args: never; Returns: Json }
+      can_manage_catalog: { Args: { _user_id: string }; Returns: boolean }
+      can_manage_content: { Args: { _user_id: string }; Returns: boolean }
+      can_manage_operations: { Args: { _user_id: string }; Returns: boolean }
       has_permission: {
         Args: { _permission: string; _user_id: string }
         Returns: boolean
@@ -1008,10 +1236,24 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_role_text: {
+        Args: { _role: string; _user_id: string }
+        Returns: boolean
+      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
       process_paystack_success: { Args: { payload: Json }; Returns: Json }
     }
     Enums: {
-      app_role: "admin" | "staff" | "user"
+      app_role:
+        | "admin"
+        | "staff"
+        | "user"
+        | "super_admin"
+        | "catalog_admin"
+        | "operations_admin"
+        | "finance_admin"
+        | "support_admin"
+        | "content_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1139,7 +1381,17 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "staff", "user"],
+      app_role: [
+        "admin",
+        "staff",
+        "user",
+        "super_admin",
+        "catalog_admin",
+        "operations_admin",
+        "finance_admin",
+        "support_admin",
+        "content_admin",
+      ],
     },
   },
 } as const
