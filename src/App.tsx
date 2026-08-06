@@ -7,7 +7,9 @@ import NotFound from "./pages/NotFound";
 import OrderStatus from "./pages/OrderStatus";
 import OrderStatusV2 from "./pages/OrderStatusV2";
 import WhatsAppReport from "./pages/WhatsAppReport";
+import ProductPage from "./pages/ProductPage";
 import { productRoutes } from "@/core/router/product.routes";
+
 
 const AdminGate = lazy(() => import("./admin/AdminGate"));
 const AdminLayout = lazy(() => import("./admin/AdminLayout"));
