@@ -16,9 +16,12 @@ export function exportCsv(filename: string, rows: Array<Record<string, unknown>>
   const cols = Array.from(rows.reduce<Set<string>>((s, r) => { Object.keys(r).forEach(k => s.add(k)); return s; }, new Set()));
   const esc = (v: unknown) => {
     if (v == null) return "";
-    const s = typeof v === "object" ? JSON.stringify(v) : String(v);
+    let s = typeof v === "object" ? JSON.stringify(v) : String(v);
+    // CSV formula-injection guard: neutralise spreadsheet-executable prefixes.
+    if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
+
   const csv = [cols.join(","), ...rows.map(r => cols.map(c => esc(r[c])).join(","))].join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
   triggerDownload(blob, filename.endsWith(".csv") ? filename : `${filename}.csv`);
