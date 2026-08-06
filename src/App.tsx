@@ -67,6 +67,8 @@ export default function App() {
               <Route path="catalog" element={<CatalogAdmin />} />
               <Route path="media" element={<MediaAdmin />} />
               <Route path="security" element={<SecurityAdmin />} />
+              <Route path="security/audit" element={<AuditLogsAdmin />} />
+
 
             </Route>
 
