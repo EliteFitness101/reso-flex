@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProductBySlug, getCheckoutUrl } from "@/core/product.resolver";
-import { setSeo, setJsonLd, productJsonLd } from "@/lib/seo";
+import { setSeo, setJsonLd, productJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 
 export default function ProductPage() {
   const { slug } = useParams();
@@ -21,7 +21,7 @@ export default function ProductPage() {
       image: (product as any).image ?? null,
       type: "product",
     });
-    return setJsonLd(
+    const removeProduct = setJsonLd(
       "product",
       productJsonLd({
         sku: product.sku,
@@ -32,6 +32,15 @@ export default function ProductPage() {
         path,
       }),
     );
+    const removeCrumbs = setJsonLd(
+      "breadcrumb",
+      breadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Shop", path: "/shop" },
+        { name: product.name, path },
+      ]),
+    );
+    return () => { removeProduct(); removeCrumbs(); };
   }, [product]);
 
   if (!product) {

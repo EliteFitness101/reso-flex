@@ -24,6 +24,8 @@ function productPaths(): string[] {
 
 const entries: SitemapEntry[] = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
+  { path: "/shop", changefreq: "weekly", priority: "0.9" },
+  { path: "/chatb2k", changefreq: "monthly", priority: "0.7" },
   ...productPaths().map((path) => ({ path, changefreq: "weekly" as const, priority: "0.8" })),
 ];
 

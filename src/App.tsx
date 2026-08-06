@@ -24,6 +24,8 @@ const ChatB2KAdmin = lazy(() => import("./pages/admin/ChatB2KAdmin"));
 const CatalogAdmin = lazy(() => import("./pages/admin/CatalogAdmin"));
 const MediaAdmin = lazy(() => import("./pages/admin/MediaAdmin"));
 const SecurityAdmin = lazy(() => import("./pages/admin/SecurityAdmin"));
+const AuditLogsAdmin = lazy(() => import("./pages/admin/AuditLogsAdmin"));
+const ChatB2KPage = lazy(() => import("./pages/ChatB2KPage"));
 
 const AttributionQA = import.meta.env.DEV ? lazy(() => import("./dev/qa/AttributionQA")) : null;
 
@@ -47,6 +49,8 @@ export default function App() {
             <Route path="/shop/products/:slug" element={<ProductPage />} />
             <Route path="/order/:reference" element={<OrderStatus />} />
             <Route path="/order-status/:orderId" element={<OrderStatusV2 />} />
+            <Route path="/chatb2k" element={<ChatB2KPage />} />
+
 
 
             {/* Admin */}
@@ -63,6 +67,8 @@ export default function App() {
               <Route path="catalog" element={<CatalogAdmin />} />
               <Route path="media" element={<MediaAdmin />} />
               <Route path="security" element={<SecurityAdmin />} />
+              <Route path="security/audit" element={<AuditLogsAdmin />} />
+
 
             </Route>
 
