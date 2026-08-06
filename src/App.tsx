@@ -39,8 +39,13 @@ export default function App() {
         <Suspense fallback={<Loading />}>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/shop" element={<Index />} />
+            <Route path="/product/:slug" element={<ProductPage />} />
+            <Route path="/products/:slug" element={<ProductPage />} />
+            <Route path="/shop/products/:slug" element={<ProductPage />} />
             <Route path="/order/:reference" element={<OrderStatus />} />
             <Route path="/order-status/:orderId" element={<OrderStatusV2 />} />
+
 
             {/* Admin */}
             <Route path="/admin/login" element={<AdminLogin />} />
