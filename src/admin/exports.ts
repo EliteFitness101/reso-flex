@@ -129,6 +129,47 @@ export function exportXlsx<T extends Record<string, any>>(
   XLSX.writeFile(wb, name, { compression: true });
 }
 
+/* ---------------------------------- PDF -------------------------------- */
+
+/**
+ * Dependency-free PDF export: renders a print-styled document in a hidden
+ * window and hands off to the browser's "Save as PDF" print pipeline.
+ */
+export function exportPdf(opts: {
+  title: string;
+  subtitle?: string;
+  columns: string[];
+  rows: Array<Record<string, unknown>>;
+}) {
+  const esc = (v: unknown) =>
+    String(v ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+
+  const head = opts.columns.map((c) => `<th>${esc(c)}</th>`).join("");
+  const body = opts.rows
+    .map((r) => `<tr>${opts.columns.map((c) => `<td>${esc(r[c])}</td>`).join("")}</tr>`)
+    .join("");
+
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(opts.title)}</title>
+<style>
+  body{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#111;margin:24px}
+  h1{font-size:16px;letter-spacing:.12em;text-transform:uppercase;margin:0 0 4px}
+  p{font-size:11px;color:#555;margin:0 0 16px}
+  table{width:100%;border-collapse:collapse;font-size:10px}
+  th,td{border:1px solid #ddd;padding:4px 6px;text-align:left;word-break:break-word}
+  th{background:#f3f3f3;text-transform:uppercase;letter-spacing:.08em}
+  @page{size:A4 landscape;margin:12mm}
+</style></head><body>
+<h1>${esc(opts.title)}</h1>${opts.subtitle ? `<p>${esc(opts.subtitle)}</p>` : ""}
+<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`;
+
+  const w = window.open("", "_blank", "noopener,width=1024,height=768");
+  if (!w) return;
+  w.document.write(html);
+  w.document.close();
+}
+
 function triggerDownload(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
