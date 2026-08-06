@@ -24,6 +24,8 @@ const ChatB2KAdmin = lazy(() => import("./pages/admin/ChatB2KAdmin"));
 const CatalogAdmin = lazy(() => import("./pages/admin/CatalogAdmin"));
 const MediaAdmin = lazy(() => import("./pages/admin/MediaAdmin"));
 const SecurityAdmin = lazy(() => import("./pages/admin/SecurityAdmin"));
+const AuditLogsAdmin = lazy(() => import("./pages/admin/AuditLogsAdmin"));
+const ChatB2KPage = lazy(() => import("./pages/ChatB2KPage"));
 
 const AttributionQA = import.meta.env.DEV ? lazy(() => import("./dev/qa/AttributionQA")) : null;
 
