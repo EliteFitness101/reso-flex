@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProductBySlug, getCheckoutUrl } from "@/core/product.resolver";
-import { setSeo, setJsonLd, productJsonLd } from "@/lib/seo";
+import { setSeo, setJsonLd, productJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 
 export default function ProductPage() {
   const { slug } = useParams();
