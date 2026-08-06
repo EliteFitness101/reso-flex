@@ -11,7 +11,8 @@ const links = [
   { to: "/admin/fulfillment", label: "Fulfillment" },
   { to: "/admin/chatb2k", label: "ChatB2K" },
   { to: "/admin/resellers", label: "Resellers" },
-  { to: "/admin/security", label: "Security" },
+  { to: "/admin/security", label: "Security", end: true },
+  { to: "/admin/security/audit", label: "Audit" },
   { to: "/admin/whatsapp", label: "WhatsApp" },
 ];
 
