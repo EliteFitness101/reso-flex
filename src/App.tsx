@@ -49,6 +49,8 @@ export default function App() {
             <Route path="/shop/products/:slug" element={<ProductPage />} />
             <Route path="/order/:reference" element={<OrderStatus />} />
             <Route path="/order-status/:orderId" element={<OrderStatusV2 />} />
+            <Route path="/chatb2k" element={<ChatB2KPage />} />
+
 
 
             {/* Admin */}
