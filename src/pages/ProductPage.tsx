@@ -4,6 +4,10 @@ import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProductBySlug, getCheckoutUrl } from "@/core/product.resolver";
 import { setSeo, setJsonLd, productJsonLd, breadcrumbJsonLd } from "@/lib/seo";
+import ProductImageGrid from "@/components/product/ProductImageGrid";
+import { getVerifiedMedia } from "@/core/media/imagekit.media";
+import { ikOg } from "@/lib/imagekit";
+
 
 export default function ProductPage() {
   const { slug } = useParams();
@@ -14,11 +18,13 @@ export default function ProductPage() {
   useEffect(() => {
     if (!product) return;
     const path = `/product/${product.handle}`;
+    const heroPath = getVerifiedMedia(product.sku)?.assets.hero?.path ?? null;
+    const image = heroPath ? ikOg(heroPath) : ((product as any).image ?? null);
     setSeo({
       title: `${product.name} — ResoFlex`,
       description: product.tagline ?? product.name,
       path,
-      image: (product as any).image ?? null,
+      image,
       type: "product",
     });
     const removeProduct = setJsonLd(
@@ -27,11 +33,12 @@ export default function ProductPage() {
         sku: product.sku,
         name: product.name,
         description: product.tagline,
-        image: (product as any).image ?? null,
+        image,
         price: product.now,
         path,
       }),
     );
+
     const removeCrumbs = setJsonLd(
       "breadcrumb",
       breadcrumbJsonLd([
@@ -62,7 +69,9 @@ export default function ProductPage() {
   return (
     <div style={{ padding: 20 }}>
       <h1>{product.name}</h1>
+      <ProductImageGrid sku={product.sku} name={product.name} />
       <p>Price: {product.priceLabel}</p>
+
 
       <button onClick={checkout}>
         Buy Now
