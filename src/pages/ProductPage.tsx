@@ -69,7 +69,9 @@ export default function ProductPage() {
   return (
     <div style={{ padding: 20 }}>
       <h1>{product.name}</h1>
+      <ProductImageGrid sku={product.sku} name={product.name} />
       <p>Price: {product.priceLabel}</p>
+
 
       <button onClick={checkout}>
         Buy Now
