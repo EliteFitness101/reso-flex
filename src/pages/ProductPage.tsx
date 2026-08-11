@@ -4,6 +4,10 @@ import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProductBySlug, getCheckoutUrl } from "@/core/product.resolver";
 import { setSeo, setJsonLd, productJsonLd, breadcrumbJsonLd } from "@/lib/seo";
+import ProductImageGrid from "@/components/product/ProductImageGrid";
+import { getVerifiedMedia } from "@/core/media/imagekit.media";
+import { ikOg } from "@/lib/imagekit";
+
 
 export default function ProductPage() {
   const { slug } = useParams();
