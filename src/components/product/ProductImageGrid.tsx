@@ -1,0 +1,119 @@
+import { useState } from "react";
+import { ikLqip, ikSrcSet, ikUrl } from "@/lib/imagekit";
+import { getVerifiedMedia, type AssetRole, type VerifiedAsset } from "@/core/media/imagekit.media";
+
+const ROLE_LABEL: Record<AssetRole, string> = {
+  hero: "",
+  gallery_01: "alternate view",
+  gallery_02: "alternate view",
+  gallery_03: "alternate view",
+  lifestyle: "in use",
+  detail: "detail view",
+};
+
+const ORDER: AssetRole[] = ["hero", "gallery_01", "gallery_02", "gallery_03", "lifestyle", "detail"];
+
+type ImgProps = {
+  asset: VerifiedAsset;
+  alt: string;
+  sizes: string;
+  eager?: boolean;
+  className?: string;
+};
+
+const IkImage = ({ asset, alt, sizes, eager, className }: ImgProps) => (
+  <img
+    src={ikUrl(asset.path, { w: 960 })}
+    srcSet={ikSrcSet(asset.path)}
+    sizes={sizes}
+    alt={alt}
+    width={asset.width}
+    height={asset.height}
+    loading={eager ? "eager" : "lazy"}
+    decoding="async"
+    fetchPriority={eager ? "high" : "auto"}
+    style={{ backgroundImage: `url(${ikLqip(asset.path)})`, backgroundSize: "cover" }}
+    className={className ?? "h-full w-full object-cover"}
+  />
+);
+
+/** Single hero rendition — product cards, collection grids, featured rails. */
+export const ProductHeroImage = ({
+  sku,
+  name,
+  eager,
+  className,
+}: {
+  sku: string;
+  name: string;
+  eager?: boolean;
+  className?: string;
+}) => {
+  const media = getVerifiedMedia(sku);
+  const hero = media?.assets.hero;
+  if (!hero) return null;
+  return (
+    <div className={`relative aspect-[4/3] overflow-hidden bg-noir-900 ${className ?? ""}`}>
+      <IkImage asset={hero} alt={name} sizes="(max-width: 640px) 50vw, 320px" eager={eager} />
+    </div>
+  );
+};
+
+/**
+ * Full verified image grid. Renders only roles that have an authentic
+ * ImageKit asset — empty roles are skipped, never placeholder-filled.
+ */
+export default function ProductImageGrid({ sku, name }: { sku: string; name: string }) {
+  const media = getVerifiedMedia(sku);
+  const [active, setActive] = useState<AssetRole>("hero");
+
+  if (!media) return null;
+
+  const roles = ORDER.filter((r) => media.assets[r]);
+  if (!roles.length) return null;
+
+  const current = media.assets[active] ?? media.assets[roles[0]]!;
+
+  return (
+    <div className="space-y-3">
+      <div className="relative aspect-[4/3] overflow-hidden border border-gold/20 bg-noir-900">
+        <IkImage
+          asset={current}
+          alt={`${name}${ROLE_LABEL[active] ? ` — ${ROLE_LABEL[active]}` : ""}`}
+          sizes="(max-width: 768px) 100vw, 640px"
+          eager
+        />
+      </div>
+
+      {roles.length > 1 && (
+        <div className="grid grid-cols-6 gap-2">
+          {roles.map((role) => {
+            const a = media.assets[role]!;
+            return (
+              <button
+                key={role}
+                type="button"
+                onClick={() => setActive(role)}
+                aria-label={`${name} ${ROLE_LABEL[role] || "main image"}`}
+                aria-pressed={active === role}
+                className={`relative aspect-square overflow-hidden border transition ${
+                  active === role ? "border-gold" : "border-border/40 hover:border-gold/50"
+                }`}
+              >
+                <img
+                  src={ikUrl(a.path, { w: 160 })}
+                  alt=""
+                  width={160}
+                  height={160}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover"
+                />
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
