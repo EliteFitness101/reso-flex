@@ -798,3 +798,13 @@ export const getVerifiedMedia = (sku?: string | null): VerifiedMedia | null =>
 
 /** Verified ImageKit folders with no matching catalog SKU. */
 export const UNMAPPED_VERIFIED_FOLDERS = ["resoflex-ankle-straps"];
+
+/** Slug lookup over the verified registry (slug === lowercased SKU or folder key). */
+export const getVerifiedMediaBySlug = (slug?: string | null): (VerifiedMedia & { sku: string }) | null => {
+  if (!slug) return null;
+  const s = slug.toLowerCase();
+  const hit = Object.entries(IMAGEKIT_VERIFIED_MEDIA).find(
+    ([sku, m]) => m.slug.toLowerCase() === s || sku.toLowerCase() === s || m.folder.toLowerCase() === s,
+  );
+  return hit ? { ...hit[1], sku: hit[0] } : null;
+};
