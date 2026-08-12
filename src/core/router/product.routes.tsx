@@ -1,12 +1,11 @@
-import { CORE_PRODUCTS } from "@/core/product.engine";
-import ProductPage from "@/pages/ProductPage";
-
 /**
- * 🧠 AUTO-GENERATED PRODUCT ROUTES
- * NO MANUAL ROUTE MAINTENANCE
+ * 🧠 PRODUCT ROUTES
+ *
+ * All product URLs are served by the dynamic `/products/:slug` route in App.tsx.
+ * Static per-product paths are intentionally NOT emitted here: React Router
+ * ranks a static segment above a dynamic one regardless of declaration order,
+ * so `/products/<slug>` would win the match and `useParams().slug` would be
+ * undefined — rendering "Product not found" for every product.
  */
 
-export const productRoutes = CORE_PRODUCTS.map((product) => ({
-  path: `/products/${product.slug}`,
-  element: <ProductPage />,
-}));
+export const productRoutes: { path: string; element: JSX.Element }[] = [];
