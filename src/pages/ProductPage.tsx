@@ -54,6 +54,15 @@ export default function ProductPage() {
   }, [product]);
 
   if (!product) {
+    if (media) {
+      return (
+        <div style={{ padding: 20 }}>
+          <h1>{media.name}</h1>
+          <ProductImageGrid sku={media.sku} name={media.name} />
+          <button onClick={() => navigate("/#products")}>Enquire / Order</button>
+        </div>
+      );
+    }
     return <div>Product not found</div>;
   }
 
