@@ -5,7 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getProductBySlug, getCheckoutUrl } from "@/core/product.resolver";
 import { setSeo, setJsonLd, productJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import ProductImageGrid from "@/components/product/ProductImageGrid";
-import { getVerifiedMedia } from "@/core/media/imagekit.media";
+import { getVerifiedMedia, getVerifiedMediaBySlug } from "@/core/media/imagekit.media";
 import { ikOg } from "@/lib/imagekit";
 
 
@@ -14,6 +14,9 @@ export default function ProductPage() {
   const navigate = useNavigate();
 
   const product = slug ? getProductBySlug(slug) : null;
+  // Catalog products whose commerce record lives in the backend still have
+  // verified ImageKit media — render the authentic gallery instead of a 404.
+  const media = !product ? getVerifiedMediaBySlug(slug) : null;
 
   useEffect(() => {
     if (!product) return;
@@ -51,6 +54,15 @@ export default function ProductPage() {
   }, [product]);
 
   if (!product) {
+    if (media) {
+      return (
+        <div style={{ padding: 20 }}>
+          <h1>{media.name}</h1>
+          <ProductImageGrid sku={media.sku} name={media.name} />
+          <button onClick={() => navigate("/#products")}>Enquire / Order</button>
+        </div>
+      );
+    }
     return <div>Product not found</div>;
   }
 
