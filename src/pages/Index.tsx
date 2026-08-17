@@ -5,6 +5,7 @@ import { TrustFloatBadge } from "@/components/sales/TrustFloatBadge";
 import { HeroCarousel } from "@/components/sales/HeroCarousel";
 import { TrustBadges } from "@/components/sales/TrustBadges";
 import { ProductGrid } from "@/components/sales/ProductGrid";
+import { ImageKitProductGrid } from "@/components/sales/ImageKitProductGrid";
 import { LazySection } from "@/components/sales/LazySection";
 import { MusicBubble } from "@/components/sales/MusicBubble";
 import { ChatBubble } from "@/components/sales/ChatBubble";
@@ -51,6 +52,9 @@ const Index = () => {
         <HeroCarousel />
         <TrustBadges />
         <ProductGrid onBuy={handleBuy} />
+        <LazySection forceAfterMs={2500} minHeight={500}>
+          <ImageKitProductGrid onBuy={handleBuy} />
+        </LazySection>
 
         {/* Below-the-fold: lazy + IO-gated, with force-mount fallback */}
         <LazySection forceAfterMs={2500} minHeight={300}>
