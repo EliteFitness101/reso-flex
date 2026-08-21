@@ -8,8 +8,10 @@ type Props = {
   onPaid: (p: Product) => void;
 };
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+// Production checkout is pinned to the verified live Supabase project.
+// These are public client credentials; the Paystack secret remains server-side.
+const SUPABASE_URL = "https://vbqjvmnhdtdhmeeudqnn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_fu_Y3KQipfuomFQyd3zNtA_rG9XpOfG";
 
 export const CheckoutModal = ({ product, onClose }: Props) => {
   const [busy, setBusy] = useState(false);
