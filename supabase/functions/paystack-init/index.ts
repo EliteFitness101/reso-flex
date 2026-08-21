@@ -27,7 +27,6 @@ Deno.serve(async (req) => {
   const name = String(body?.name || "").trim().slice(0, 120);
   const phone = String(body?.phone || "").trim().slice(0, 32);
   const address = String(body?.address || "").trim().slice(0, 255);
-  const origin = String(body?.origin || "").trim();
 
   if (!sku || !email || !name || !phone || !address) return json(400, { error: "missing_checkout_fields" });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(400, { error: "invalid_email" });
@@ -47,7 +46,7 @@ Deno.serve(async (req) => {
   if (!Number.isFinite(amountNgn) || amountNgn <= 0) return json(409, { error: "product_not_sellable" });
 
   const reference = `RF-${Date.now()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
-  const callback = `${origin || "https://shop.resofit.fit"}/order/${encodeURIComponent(reference)}`;
+  const callback = "https://dashboard.resofit.fit/payment/callback";
   const metadata = {
     sku,
     variant_sku: sku,
