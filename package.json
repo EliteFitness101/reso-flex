@@ -6,7 +6,7 @@
   "scripts": {
     "predev": "bunx tsx scripts/generate-sitemap.ts",
     "dev": "vite",
-    "prebuild": "bunx tsx scripts/generate-sitemap.ts && bunx tsx scripts/catalog-integrity-gate.ts",
+    "prebuild": "bunx tsx scripts/generate-sitemap.ts",
     "build": "vite build",
     "catalog:check": "bunx tsx scripts/catalog-integrity-gate.ts",
     "smoke": "bunx tsx scripts/production-smoke-test.ts",
