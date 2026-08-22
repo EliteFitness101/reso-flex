@@ -47,18 +47,32 @@ Deno.serve(async (req) => {
 
   const reference = `RF-${Date.now()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
   const callback = "https://dashboard.resofit.fit/payment/callback";
+  const attribution = {
+    rsid: String(body?.rsid || "").trim().slice(0, 128) || null,
+    utm_source: String(body?.utm_source || "").trim().slice(0, 128) || null,
+    utm_medium: String(body?.utm_medium || "").trim().slice(0, 128) || null,
+    utm_campaign: String(body?.utm_campaign || "").trim().slice(0, 128) || null,
+    utm_term: String(body?.utm_term || "").trim().slice(0, 128) || null,
+    utm_content: String(body?.utm_content || "").trim().slice(0, 128) || null,
+    funnel_origin: String(body?.funnel_origin || "resoflex_shop").trim().slice(0, 128),
+    session_id: String(body?.session_id || "").trim().slice(0, 128) || null,
+    campaign: String(body?.campaign || "").trim().slice(0, 128) || null,
+  };
+
   const metadata = {
     sku,
     variant_sku: sku,
     product_name: product.name,
+    customer_name: name,
     phone,
     delivery_address: address,
-    funnel_origin: "resoflex_shop",
     checkout_channel: "paystack_direct",
+    ...attribution,
     custom_fields: [
       { display_name: "SKU", variable_name: "variant_sku", value: sku },
       { display_name: "Phone", variable_name: "phone", value: phone },
       { display_name: "Delivery", variable_name: "delivery_address", value: address },
+      { display_name: "RSID", variable_name: "rsid", value: attribution.rsid ?? "" },
     ],
   };
 
