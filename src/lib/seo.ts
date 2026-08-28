@@ -3,7 +3,7 @@
 // Client-side; safe to call from any page component.
 // ============================================================
 
-const SITE = "https://reso-flex.lovable.app";
+const SITE = "https://shop.resofit.fit";
 
 function upsertMeta(selector: string, attrs: Record<string, string>) {
   let el = document.head.querySelector<HTMLMetaElement>(selector);
