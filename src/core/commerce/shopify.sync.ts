@@ -1,8 +1,9 @@
 // ============================================================
-// Shopify Sync Preparation Layer (v3.3.2)
-// Safe, upsert-only reconciliation framework. NO destructive ops.
-// If Shopify credentials are absent the layer stays dormant and only
-// records a skipped run in catalog_sync_audit.
+// SECONDARY COMMERCE ADAPTER — SHOPIFY
+// Shopify is retained only as a secondary/fallback integration.
+// It is NOT part of the primary ResoFit revenue path.
+// Primary: resofit.fit → shop.resofit.fit → Paystack → Supabase.
+// This layer must never be required for product routing or checkout.
 // ============================================================
 
 import { supabase } from "@/integrations/supabase/client";
@@ -10,10 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 export type SyncEntity = "product" | "collection";
 
 export interface SyncRecord {
-  /** Stable business key — SKU for products, collection_code for collections. */
   key: string;
   shopify_id?: string | null;
-  /** Remote updated_at; used to guarantee we never overwrite newer local rows. */
   updated_at?: string | null;
   fields: Record<string, unknown>;
 }
@@ -27,7 +26,6 @@ export interface SyncResult {
   details: Record<string, unknown>;
 }
 
-/** Shopify is considered connected only when both env hooks are present. */
 export function isShopifyConnected(): boolean {
   const env = import.meta.env as Record<string, string | undefined>;
   return Boolean(env.VITE_SHOPIFY_STORE_DOMAIN && env.VITE_SHOPIFY_STOREFRONT_TOKEN);
@@ -46,14 +44,10 @@ async function logSync(source: string, r: SyncResult, actorId?: string | null) {
       details: r.details as never,
     });
   } catch {
-    /* audit logging must never break a sync run */
+    // Secondary audit logging must never affect primary commerce.
   }
 }
 
-/**
- * Upsert-only reconciliation. Never deletes. Skips any record whose remote
- * `updated_at` is older than the local row's `updated_at`.
- */
 export async function reconcileProducts(records: SyncRecord[], source = "shopify"): Promise<SyncResult> {
   const res: SyncResult = { entity: "product", processed: 0, failed: 0, skipped: 0, result: "ok", details: {} };
   const conflicts: string[] = [];
@@ -115,11 +109,6 @@ export async function reconcileCollections(records: SyncRecord[], source = "shop
   return res;
 }
 
-/**
- * Scheduled sync entry point. Safe to call from an admin action or a future
- * cron/edge trigger. Fetching from Shopify is intentionally left as a hook —
- * wire `fetchRemote` once credentials exist.
- */
 export async function runScheduledSync(opts?: {
   fetchRemote?: () => Promise<{ products: SyncRecord[]; collections: SyncRecord[] }>;
 }): Promise<SyncResult[]> {
@@ -130,7 +119,7 @@ export async function runScheduledSync(opts?: {
       failed: 0,
       skipped: 0,
       result: "skipped",
-      details: { reason: "shopify_not_connected" },
+      details: { reason: "shopify_secondary_not_connected" },
     };
     await logSync("shopify", skipped);
     return [skipped];
