@@ -1,20 +1,25 @@
-# P4 Integration Contract — `shop.resofit.fit`
+# ResoFit Production Integration Contract — `resofit.fit` → `shop.resofit.fit`
 
-## Canonical dependencies
-- `catalog.resofit.fit` — product/SKU/value source of truth
-- `resofit.fit` — main ecosystem and member entry
-- `chatb2k.resofit.fit` — intent/recommendation intelligence
-- canonical Supabase — identity/order/payment/fulfillment ledger
-- Paystack — active Nigeria payment provider
+## Primary dependencies
+- `resofit.fit` — main ecosystem entry
+- `shop.resofit.fit` — primary commerce storefront
+- canonical Supabase — product/order/payment/fulfillment ledger
+- ImageKit — canonical product media delivery
+- Paystack — primary Nigeria payment provider
+- ChatB2K — recommendation/intention layer
 
-## Persistence
-Carry safe member/anonymous ID, attribution, funnel origin, intent, recommended SKU, return route and transaction reference across boundaries. Never carry service credentials or secrets in URLs.
+## Product identity
+Every recommendation and product page resolves to the same canonical SKU/handle. Product URLs are dynamic; no product-specific hardcoded routes are permitted.
 
-## Product routing
-A ChatB2K recommendation resolves to an exact canonical SKU/handle. Product page and checkout must use that same identity. Generic shop-home fallback is only for discovery when no exact recommendation exists.
+## Primary payment path
+Customer → dynamic ResoFit product page → Paystack → Supabase order/payment ledger → webhook verification → fulfillment/status.
 
-## Payment
-Client submits SKU/quantity/customer details. Server resolves price from catalog, creates pending order, initializes Paystack and verifies payment. Signed webhook/ledger is authoritative for paid and fulfilled state.
+## Shopify
+Shopify remains a secondary/fallback commerce integration only. It must not be required for primary catalog discovery, product routing, checkout, payment, or fulfillment.
 
-## Store separation
-`shop.resofit.fit` and `store.resofit.fit` share infrastructure contracts but remain separate domains and deployments.
+## Tracking
+Paystack ResoFlex destinations preserve the production attribution parameters:
+`rsid=08c53b223ff148b19a9d`
+`referrer=https%3A%2F%2Fshop.resofit.fit%2F`
+
+Never fabricate Paystack product handles from product names.
