@@ -1,7 +1,7 @@
 // ============================================================
 // PRODUCT ENGINE — thin resolver layer.
-// Single source of truth: src/data/products.ts (+ src/data/bundles.ts).
-// Do NOT define products, prices, or Paystack URLs here.
+// Canonical storefront identity is slug OR SKU. Never hardcode a
+// special product route (including Reset) here.
 // ============================================================
 
 import { PRODUCTS, type Product } from "@/data/products";
@@ -14,20 +14,28 @@ import { verifyCheckoutUrl } from "@/lib/verifyCheckoutUrl";
 
 export type { Product, Bundle };
 
-// -------- Product lookups (derive from PRODUCTS) -------------
+const normalizeIdentifier = (value: string) => value.trim().toLowerCase();
+
 export const getAllProducts = (): Product[] => PRODUCTS;
 
-export const getProduct = (idOrHandle: string): Product | undefined =>
-  PRODUCTS.find((p) => p.id === idOrHandle || p.handle === idOrHandle);
+export const getProduct = (identifier: string): Product | undefined => {
+  const key = normalizeIdentifier(identifier);
+  return PRODUCTS.find(
+    (p) =>
+      normalizeIdentifier(p.id) === key ||
+      normalizeIdentifier(p.handle) === key ||
+      normalizeIdentifier(p.sku) === key,
+  );
+};
 
 export const getProductBySlug = (slug: string): Product | undefined =>
-  PRODUCTS.find((p) => p.handle === slug);
+  getProduct(slug);
 
 export const getProductById = (id: string): Product | undefined =>
-  PRODUCTS.find((p) => p.id === id);
+  PRODUCTS.find((p) => normalizeIdentifier(p.id) === normalizeIdentifier(id));
 
 export const getProductBySku = (sku: string): Product | undefined =>
-  PRODUCTS.find((p) => p.sku === sku);
+  PRODUCTS.find((p) => normalizeIdentifier(p.sku) === normalizeIdentifier(sku));
 
 export const getFeaturedProducts = (): Product[] =>
   PRODUCTS.filter((p) => p.popular);
@@ -35,34 +43,27 @@ export const getFeaturedProducts = (): Product[] =>
 export const getFreeProducts = (): Product[] =>
   PRODUCTS.filter((p) => p.free || p.now === 0);
 
-// -------- Bundle lookups (derive from BUNDLES) ---------------
 export const getBundles = (): Bundle[] => BUNDLES;
 export const getBundleBySku = (sku: string): Bundle | undefined =>
-  BUNDLES.find((b) => b.sku === sku);
+  BUNDLES.find((b) => normalizeIdentifier(b.sku) === normalizeIdentifier(sku));
 export const getBundleSuggestionsFor = (sku: string): Bundle[] =>
   suggestBundlesFor(sku);
 
-// -------- Checkout resolution --------------------------------
-// PRODUCTS are sold through CheckoutModal (WhatsApp handoff → Paystack link
-// issued server-side). BUNDLES ship with a direct paystackUrl. This helper
-// resolves a validated URL only when one exists.
-export const getCheckoutUrl = (idOrHandleOrSku: string): string | null => {
+// Primary checkout: ResoFit → shop.resofit.fit → Paystack → Supabase.
+// Shopify is not a checkout dependency here.
+export const getCheckoutUrl = (identifier: string): string | null => {
+  const key = normalizeIdentifier(identifier);
   const bundle = BUNDLES.find(
-    (b) => b.id === idOrHandleOrSku || b.sku === idOrHandleOrSku,
+    (b) => normalizeIdentifier(b.id) === key || normalizeIdentifier(b.sku) === key,
   );
   if (bundle?.paystackUrl) return verifyCheckoutUrl(bundle.paystackUrl);
 
-  const product = getProduct(idOrHandleOrSku) ?? getProductBySku(idOrHandleOrSku);
-  if (!product) return null;
-  if (product.free || product.now === 0) return null;
+  const product = getProduct(identifier);
+  if (!product || product.free || product.now === 0) return null;
 
-  // Physical/digital products route through CheckoutModal — no direct URL.
   return null;
 };
 
-// -------- Legacy compatibility shim --------------------------
-// Older code paths (deployment guard, auto-generated routes) expect a flat
-// array. Derive it so we never maintain a second catalog.
 export interface LegacyCoreProduct {
   id: string;
   slug: string;
@@ -77,6 +78,6 @@ export const CORE_PRODUCTS: LegacyCoreProduct[] = PRODUCTS.map((p) => ({
   slug: p.handle,
   name: p.name,
   price: p.now,
-  paystackUrl: null, // resolved on-demand via CheckoutModal
+  paystackUrl: null,
   isFree: Boolean(p.free) || p.now === 0,
 }));
