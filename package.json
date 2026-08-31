@@ -10,6 +10,7 @@
     "build": "vite build",
     "catalog:check": "bunx tsx scripts/catalog-integrity-gate.ts",
     "smoke": "bunx tsx scripts/production-smoke-test.ts",
+    "dominion:gate": "bunx tsx scripts/dominion-production-gate.ts",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
