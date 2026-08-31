@@ -3,8 +3,18 @@
 ## Purpose
 `ecosystem.md` is the strategic contract for ChatB2K and the ResoFit Dominion Engine. It defines business capabilities, decision order and canonical ownership. Providers are adapters; ResoFit remains the business source of truth.
 
+## Canonical production boundary
+`EliteFitness101/reso-flex` is the primary application/core repository. `EliteFitness101/reso-dash` is a separate dashboard surface for member/partner/admin experience and telemetry. Neither surface replaces the canonical ResoFit/Supabase state layer.
+
+The active production Supabase project is `resonance-fitness` (`vbqjvmnhdtdhmeeudqnn`). Its active `paystack-webhook` Edge Function is the canonical Paystack event ingress. The dashboard callback contract is `https://dashboard.resofit.fit/payment/callback`; route implementation must be verified separately from the webhook.
+
 ## Opportunity → Solution → Commerce → Fulfillment
 NATIONAL/GLOBAL SIGNALS → SEARCH/CONTENT/PRODUCT/SERVICE GAPS → POPULAR REQUESTS → MARKET/COMPETITOR SIGNALS → CHATB2K INTELLIGENCE → OPPORTUNITY → SOLUTION → VERIFY → CANONICAL REGISTER → PAYMENT/BOOKING → ORDER → FULFILLMENT → DELIVERY/TRACKING → MEMBER EXPERIENCE → REPEAT/UPSELL/CROSS-SELL/REFERRAL → FEEDBACK.
+
+## Paystack event authority
+Paystack webhooks terminate at the canonical Supabase Edge Function `paystack-webhook`. The deployed function currently verifies the raw-body `x-paystack-signature` with HMAC-SHA-512, uses `public.payment_events` for idempotency, validates successful NGN charge amounts against the registered subscriber amount, updates payment/revenue state, and emits the canonical `payment.succeeded` event into `public.resofit_events`.
+
+The canonical payment webhook does not depend on Make.com or n8n. Those systems remain replaceable external adapters for non-canonical automation and publishing tasks.
 
 ## Intelligence scope
 - country → state → city → hub demand
@@ -54,6 +64,7 @@ VISITOR → LEAD → QUALIFIED → CUSTOMER → FIRST PURCHASE → FULFILLMENT �
 - External adapter registry: `public.resofit_adapter_registry`
 - Orders/fulfillment: `public.resofit_fulfillment_*`
 - Payments: `public.payments`, `public.payment_events`, payment ledger tables
+- Members: `public.resofit_member_states`, `public.resofit_dashboard_entitlements`
 - Geo: `public.resofit_wellness_*`
 
 ## Production invariant
