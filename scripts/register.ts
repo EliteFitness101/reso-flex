@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { slugify } from '../src/lib/dominion';
+import { slugify } from '../src/lib/dominion.js';
 
 type Registration = {
   entityType: 'product' | 'service' | 'bundle' | 'program' | 'journey' | 'offer';
