@@ -1,7 +1,30 @@
 # ResoFit OS™ Production Ecosystem Plan
 
 ## Role
-This repository is the production source for Vercel project `reso-flex`. `ecosystem.md` is the strategic intelligence contract; `Dominion.md` is the execution architecture. Canonical business state remains in ResoFit/Supabase.
+This repository is the production application core for the ResoFit ecosystem and Dominion Engine. `ecosystem.md` is the strategic intelligence contract; `Dominion.md` is the execution architecture. Canonical business state remains in ResoFit/Supabase.
+
+## Current production ownership
+- Primary application core: `EliteFitness101/reso-flex`, branch `main`.
+- Administrative/member/partner dashboard: `EliteFitness101/reso-dash` (separate surface; not the canonical commerce/intelligence source of truth).
+- Canonical Supabase project: `resonance-fitness` (`vbqjvmnhdtdhmeeudqnn`, eu-west-1).
+- Active canonical Paystack webhook: `https://vbqjvmnhdtdhmeeudqnn.supabase.co/functions/v1/paystack-webhook`.
+- Proposed/current Paystack return surface: `https://dashboard.resofit.fit/payment/callback`; this URL is recorded as the dashboard callback contract, but its frontend route implementation is not asserted here without repository-level route evidence.
+
+## Verified Paystack webhook contract
+The live Supabase Edge Function `paystack-webhook` is ACTIVE at version 27 with JWT verification disabled because Paystack signs webhook requests rather than sending a user JWT. The deployed function verifies `x-paystack-signature` using HMAC-SHA-512 over the raw request body and performs constant-time comparison.
+
+After signature verification it:
+1. Parses the Paystack event and extracts `data.reference`.
+2. Uses `public.payment_events` keyed by `paystack_ref` for idempotent processing.
+3. Handles `charge.success` only when the subscriber exists, Paystack status is `success`, currency is NGN, and the received kobo amount exactly matches the expected whole-NGN amount.
+4. Updates `public.resoflex_subscribers` payment state.
+5. Upserts `public.payments`.
+6. Upserts `public.revenue_events`.
+7. Emits canonical `payment.succeeded` into `public.resofit_events` with an idempotency key and attribution fields.
+8. Handles the existing upsell path when Paystack metadata identifies an upsell.
+9. Marks the payment event processed.
+
+The webhook explicitly does **not** forward canonical payment processing to Make.com or n8n. The ResoFit event/payment ledgers are authoritative; external automation remains an optional adapter.
 
 ## Core loop
 NATIONAL → GLOBAL SIGNALS → SEARCH/CONTENT/PRODUCT/SERVICE GAPS → POPULAR REQUESTS → COMPETITOR/MARKET SIGNALS → CHATB2K INTELLIGENCE → OPPORTUNITY → SOLUTION → VERIFY → REGISTER → PAYMENT/ORDER/BOOKING → FULFILLMENT → DELIVERY/TRACKING → MEMBER EXPERIENCE → REFERRAL/REPEAT/UPSELL/CROSS-SELL → FEEDBACK.
@@ -36,13 +59,16 @@ Gemini, OpenAI/ChatGPT and other approved providers are model adapters behind Ch
 - Content: `public.content_opportunities`, `public.creative_variants`, `public.content_queue`, `public.content_logs`
 - Events: `public.resofit_events`, adapter registry/outbox
 - Commerce: products, canonical routes, economics
-- Payments: payments, payment events, webhook/processing/settlement ledgers
-- Fulfillment: `public.resofit_fulfillment_*`, hub inventory
+- Payments: `public.payments`, `public.payment_events`, payment/webhook/settlement ledgers
+- Fulfillment: `public.resofit_fulfillment_*`
 - Geo: `public.resofit_wellness_states`, cities, hubs, services, availability
-- Members: member states, preferences, chat memory/sessions
+- Members: `public.resofit_member_states`, dashboard entitlements, preferences, chat memory/sessions
 
 ## Production gates
-Build → typecheck/lint → API smoke → database health → catalog integrity → content opportunity generation → canonical registration dry-run → payment/webhook verification → fulfillment verification → security/advisory audit → deployment runtime audit.
+Build → typecheck/lint → API smoke → database health → catalog integrity → content opportunity generation → canonical registration dry-run → payment/webhook verification → callback-route verification → fulfillment verification → security/advisory audit → deployment runtime audit.
 
 ## Non-negotiable invariants
-Server-side prices only. Secrets server-side only. Signed payment events. Idempotent events. RLS on exposed data. Authorized source acquisition only. Provider failures cannot overwrite canonical business state. Unknown identifiers fail closed.
+Server-side prices only. Secrets server-side only. Signed payment events. Idempotent events. RLS on exposed data. Authorized source acquisition only. Provider failures cannot overwrite canonical business state. Unknown identifiers fail closed. Make/n8n cannot become the canonical payment or business-state processor.
+
+## Evidence rule
+Architecture claims may describe intended design; production certification must be supported by current live evidence. A configured URL is not equivalent to a verified route, and an implementation is not equivalent to a verified deployment.
