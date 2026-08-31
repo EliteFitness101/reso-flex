@@ -8,3 +8,5 @@ Canonical architecture:
 - `Dominion.md` — execution architecture
 
 Canonical business state remains in ResoFit/Supabase; external providers are adapters.
+
+Production validation: Cloudinary explicit credential precedence fix applied.
