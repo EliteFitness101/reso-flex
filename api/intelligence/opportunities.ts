@@ -1,23 +1,30 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { detectOpportunity, type Signal } from '../../src/lib/dominion.js';
+import { detectOpportunity, type Signal, type SourcePlatform } from '../../src/lib/dominion.js';
 import { persistOpportunity, signalFromInput } from '../../src/lib/dominionServer.js';
+
+const SOURCES = new Set<SourcePlatform>(['web', 'tiktok', 'twitch', 'bigo', 'x', 'youtube', 'internal']);
 
 function bodySignals(body: unknown): Signal[] {
   if (!Array.isArray(body)) return [];
-  return body.filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
-    .map((item) => signalFromInput({
-      source: item.source as Signal['source'],
-      topic: String(item.topic ?? ''),
-      query: typeof item.query === 'string' ? item.query : undefined,
-      url: typeof item.url === 'string' ? item.url : undefined,
-      geography: typeof item.geography === 'string' ? item.geography : undefined,
-      demandScore: Number(item.demandScore ?? 0),
-      freshnessScore: Number(item.freshnessScore ?? 50),
-      engagementScore: Number(item.engagementScore ?? 0),
-      authorized: item.authorized !== false,
-      metadata: item.metadata as Record<string, unknown> | undefined,
-    }))
-    .filter((signal) => signal.topic.length > 0);
+  return body
+    .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
+    .map((item) => {
+      const source = item.source as SourcePlatform;
+      return signalFromInput({
+        source,
+        topic: String(item.topic ?? ''),
+        query: typeof item.query === 'string' ? item.query : undefined,
+        url: typeof item.url === 'string' ? item.url : undefined,
+        geography: typeof item.geography === 'string' ? item.geography : undefined,
+        demandScore: Number(item.demandScore ?? 0),
+        freshnessScore: Number(item.freshnessScore ?? 50),
+        engagementScore: Number(item.engagementScore ?? 0),
+        // External sources must explicitly assert authorization. Internal signals are trusted.
+        authorized: source === 'internal' || item.authorized === true,
+        metadata: item.metadata as Record<string, unknown> | undefined,
+      });
+    })
+    .filter((signal) => signal.topic.length > 0 && SOURCES.has(signal.source));
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -27,6 +34,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   try {
     const signals = bodySignals(req.body?.signals ?? req.body);
+    if (!signals.length) return res.status(400).json({ status: 'ERROR', error: 'At least one valid signal is required' });
+    const unauthorized = signals.filter((signal) => signal.authorized === false);
+    if (unauthorized.length) {
+      return res.status(403).json({ status: 'ERROR', error: 'External signals require explicit authorization' });
+    }
     const opportunity = detectOpportunity(signals);
     if (!opportunity) return res.status(200).json({ status: 'NO_OPPORTUNITY', signals: signals.length });
     const persisted = await persistOpportunity(opportunity);
