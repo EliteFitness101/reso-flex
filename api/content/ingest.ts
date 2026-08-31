@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { emitEvent } from '../../src/lib/dominionServer';
-import { slugify, type SourcePlatform } from '../../src/lib/dominion';
+import { emitEvent } from '../../src/lib/dominionServer.js';
+import { slugify, type SourcePlatform } from '../../src/lib/dominion.js';
 
 const SOURCES = new Set<SourcePlatform>(['web', 'tiktok', 'twitch', 'bigo', 'x', 'youtube', 'internal']);
 
