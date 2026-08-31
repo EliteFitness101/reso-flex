@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from ' '@vercel/node';
 import crypto from 'node:crypto';
 
 const CLOUDINARY_API = 'https://api.cloudinary.com/v1_1';
@@ -20,21 +20,25 @@ type CloudinaryResource = Record<string, unknown> & {
 type SearchResponse = { resources?: CloudinaryResource[]; next_cursor?: string };
 
 function getConfig(): CloudinaryConfig {
+  // Prefer the explicit production variables. This prevents a stale/invalid
+  // CLOUDINARY_URL from shadowing the current credential set.
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
+  const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
+  const apiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
+  if (cloudName && apiKey && apiSecret) return { cloudName, apiKey, apiSecret };
+
   const url = process.env.CLOUDINARY_URL;
   if (url) {
     const parsed = new URL(url);
     if (parsed.protocol !== 'cloudinary:') throw new Error('Invalid CLOUDINARY_URL');
-    const cloudName = parsed.hostname;
-    const apiKey = decodeURIComponent(parsed.username);
-    const apiSecret = decodeURIComponent(parsed.password);
-    if (cloudName && apiKey && apiSecret) return { cloudName, apiKey, apiSecret };
-    throw new Error('Invalid CLOUDINARY_URL credentials');
+    const fallbackCloudName = parsed.hostname;
+    const fallbackApiKey = decodeURIComponent(parsed.username);
+    const fallbackApiSecret = decodeURIComponent(parsed.password);
+    if (fallbackCloudName && fallbackApiKey && fallbackApiSecret) {
+      return { cloudName: fallbackCloudName, apiKey: fallbackApiKey, apiSecret: fallbackApiSecret };
+    }
   }
 
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
-  if (cloudName && apiKey && apiSecret) return { cloudName, apiKey, apiSecret };
   throw new Error('Cloudinary server configuration is incomplete');
 }
 
@@ -161,7 +165,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    const status = /Cloudinary search failed: 401 |Cloudinary search failed: 403 /.test(message)
+    const status = /Cloudinary search failed: (401|403)\b/.test(message)
       ? 502
       : error?.name === 'TimeoutError' || error?.name === 'AbortError'
         ? 504
