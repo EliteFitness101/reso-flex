@@ -20,20 +20,22 @@ type CloudinaryResource = Record<string, unknown> & {
 type SearchResponse = { resources?: CloudinaryResource[]; next_cursor?: string };
 
 function getConfig(): CloudinaryConfig {
+  const url = process.env.CLOUDINARY_URL;
+  if (url) {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'cloudinary:') throw new Error('Invalid CLOUDINARY_URL');
+    const cloudName = parsed.hostname;
+    const apiKey = decodeURIComponent(parsed.username);
+    const apiSecret = decodeURIComponent(parsed.password);
+    if (cloudName && apiKey && apiSecret) return { cloudName, apiKey, apiSecret };
+    throw new Error('Invalid CLOUDINARY_URL credentials');
+  }
+
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
   if (cloudName && apiKey && apiSecret) return { cloudName, apiKey, apiSecret };
-
-  const url = process.env.CLOUDINARY_URL;
-  if (!url) throw new Error('Cloudinary server configuration is incomplete');
-  const parsed = new URL(url);
-  if (parsed.protocol !== 'cloudinary:') throw new Error('Invalid CLOUDINARY_URL');
-  const fallbackCloudName = parsed.hostname;
-  const fallbackApiKey = decodeURIComponent(parsed.username);
-  const fallbackApiSecret = decodeURIComponent(parsed.password);
-  if (!fallbackCloudName || !fallbackApiKey || !fallbackApiSecret) throw new Error('Invalid CLOUDINARY_URL credentials');
-  return { cloudName: fallbackCloudName, apiKey: fallbackApiKey, apiSecret: fallbackApiSecret };
+  throw new Error('Cloudinary server configuration is incomplete');
 }
 
 function normalizeFolder(value: unknown): string | null {
