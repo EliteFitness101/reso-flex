@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { DOMINION_VERSION, DOMAINS, SOURCE_CAPABILITIES } from '../../src/lib/dominion';
+import { DOMINION_VERSION, DOMAINS, SOURCE_CAPABILITIES } from '../../src/lib/dominion.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
