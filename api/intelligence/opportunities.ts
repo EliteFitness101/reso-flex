@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { detectOpportunity, type Signal } from '../../src/lib/dominion';
-import { persistOpportunity, signalFromInput } from '../../src/lib/dominionServer';
+import { detectOpportunity, type Signal } from '../../src/lib/dominion.js';
+import { persistOpportunity, signalFromInput } from '../../src/lib/dominionServer.js';
 
 function bodySignals(body: unknown): Signal[] {
   if (!Array.isArray(body)) return [];
