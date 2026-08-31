@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { buildContentBrief, detectOpportunity, type Signal } from '../../src/lib/dominion';
-import { signalFromInput } from '../../src/lib/dominionServer';
+import { buildContentBrief, detectOpportunity, type Signal } from '../../src/lib/dominion.js';
+import { signalFromInput } from '../../src/lib/dominionServer.js';
 
 const PLATFORMS = ['website', 'tiktok', 'youtube', 'instagram', 'facebook', 'whatsapp'];
 
