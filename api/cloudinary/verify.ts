@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from ' '@vercel/node';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'node:crypto';
 
 const CLOUDINARY_API = 'https://api.cloudinary.com/v1_1';
@@ -20,8 +20,8 @@ type CloudinaryResource = Record<string, unknown> & {
 type SearchResponse = { resources?: CloudinaryResource[]; next_cursor?: string };
 
 function getConfig(): CloudinaryConfig {
-  // Prefer the explicit production variables. This prevents a stale/invalid
-  // CLOUDINARY_URL from shadowing the current credential set.
+  // Prefer explicit production variables so a stale CLOUDINARY_URL cannot
+  // shadow the current credential set.
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
   const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
   const apiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
