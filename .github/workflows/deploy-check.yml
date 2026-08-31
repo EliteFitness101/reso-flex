@@ -1,49 +1,35 @@
-// FILE: src/core/dev/deployment.guard.js
+name: ResoFlex production checks
 
-const { CORE_PRODUCTS } = require("../product.engine");
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
-function run() {
-  console.log("🔍 Running deployment validation...");
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  checkSlugs();
-  checkPaystack();
-  checkFreeRules();
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
 
-  console.log("✅ Deployment validation passed");
-}
+      - name: Install dependencies
+        run: npm ci
 
-function checkSlugs() {
-  const slugs = CORE_PRODUCTS.map((p) => p.slug);
-  const duplicates = slugs.filter(
-    (s, i) => slugs.indexOf(s) !== i
-  );
+      - name: Lint
+        run: npm run lint
 
-  if (duplicates.length) {
-    throw new Error("Duplicate slugs: " + duplicates.join(", "));
-  }
-}
+      - name: Unit tests
+        run: npm test
 
-function checkPaystack() {
-  const invalid = CORE_PRODUCTS.filter(
-    (p) => !p.isFree && !p.paystackUrl
-  );
+      - name: Catalog integrity
+        run: npm run catalog:check
 
-  if (invalid.length) {
-    throw new Error(
-      "Missing Paystack URLs: " +
-        invalid.map((p) => p.id).join(", ")
-    );
-  }
-}
-
-function checkFreeRules() {
-  const invalid = CORE_PRODUCTS.filter(
-    (p) => p.isFree && p.paystackUrl !== null
-  );
-
-  if (invalid.length) {
-    throw new Error("Free products must not have Paystack URLs");
-  }
-}
-
-run();
+      - name: Production build
+        run: npm run build
