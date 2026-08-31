@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Opportunity, Signal } from './dominion';
+import type { Opportunity, Signal } from './dominion.js';
 
 export function getAdminClient() {
   const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
