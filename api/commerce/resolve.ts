@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { readCanonicalCatalog } from '../../src/lib/dominionServer';
-import { solutionHierarchy, slugify } from '../../src/lib/dominion';
+import { readCanonicalCatalog } from '../../src/lib/dominionServer.js';
+import { solutionHierarchy, slugify } from '../../src/lib/dominion.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
