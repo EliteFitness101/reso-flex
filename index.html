@@ -9,19 +9,11 @@
     <meta name="author" content="ResoFlex Elite" />
     <link rel="canonical" href="/" />
 
-    
-    
     <meta property="og:type" content="website" />
     <meta property="og:url" content="/" />
-
     <meta name="twitter:card" content="summary_large_image" />
-    
-    
 
-    <!-- Hardened CSP: scripts limited to self + Paystack + cdnjs (Font Awesome).
-         'unsafe-inline' kept for styles (Tailwind generated + FA), removed unsafe-eval.
-         object-src none, frame-ancestors none, upgrade-insecure-requests, base-uri self. -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.paystack.co https://checkout.paystack.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; frame-src https://checkout.paystack.com https://js.paystack.co; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://checkout.paystack.com; upgrade-insecure-requests" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.paystack.co https://checkout.paystack.com https://cdnjs.cloudflare.com https://www.googletagmanager.com https://analytics.tiktok.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; frame-src https://checkout.paystack.com https://js.paystack.co; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://checkout.paystack.com; upgrade-insecure-requests" />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
     <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains; preload" />
@@ -30,7 +22,31 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- GA4: public measurement identifier; tracker dispatches events through gtag. -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QN8CRFZ5TK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-QN8CRFZ5TK', { send_page_view: true });
+    </script>
+
+    <!-- TikTok Pixel: public pixel identifier; tracker dispatches events through ttq.track. -->
+    <script>
+      !function (w, d, t) {
+        w.TiktokAnalyticsObject = t;
+        var ttq = w[t] = w[t] || [];
+        ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie", "holdConsent", "revokeConsent", "grantConsent"];
+        ttq.setAndDefer = function (t, e) { t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))); }; };
+        for (var i = 0; i < ttq.methods.length; i++) ttq.setAndDefer(ttq, ttq.methods[i]);
+        ttq.instance = function (t) { var e = ttq._i[t] || []; for (var n = 0; n < ttq.methods.length; n++) ttq.setAndDefer(e, ttq.methods[n]); return e; };
+        ttq.load = function (e, n) { var r = "https://analytics.tiktok.com/i18n/pixel/events.js"; ttq._i = ttq._i || {}; ttq._i[e] = []; ttq._i[e]._u = r; ttq._t = ttq._t || {}; ttq._t[e] = +new Date; ttq._o = ttq._o || {}; ttq._o[e] = n || {}; var o = d.createElement("script"); o.type = "text/javascript"; o.async = !0; o.src = r + "?sdkid=" + e + "&lib=" + t; var a = d.getElementsByTagName("script")[0]; a.parentNode.insertBefore(o, a); };
+        ttq.load('D9MAQ0BC77U97D5Q2QJG');
+        ttq.page();
+      }(window, document, 'ttq');
+    </script>
 
     <script type="application/ld+json">
       {
@@ -43,12 +59,12 @@
       }
     </script>
     <meta property="og:title" content="ResoFlex Elite — Own Your Health. Command Your Day.">
-  <meta name="twitter:title" content="ResoFlex Elite — Own Your Health. Command Your Day.">
-  <meta property="og:description" content="ResoFlex Elite Sales OS — Premium treadmills, walking pads &amp; spin bikes for Nigeria. PowerSaver tech, 2-year warranty, nationwide insured delivery. Launch deal: 22% OFF with code RESO22.">
-  <meta name="twitter:description" content="ResoFlex Elite Sales OS — Premium treadmills, walking pads &amp; spin bikes for Nigeria. PowerSaver tech, 2-year warranty, nationwide insured delivery. Launch deal: 22% OFF with code RESO22.">
-  <meta property="og:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/dHbshoVo9TN6VIBwuG56Yew1AJv2/social-images/social-1779028008787-07CF393C-D998-42F1-87CF-33A49CE43EDB.webp">
-  <meta name="twitter:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/dHbshoVo9TN6VIBwuG56Yew1AJv2/social-images/social-1779028008787-07CF393C-D998-42F1-87CF-33A49CE43EDB.webp">
-</head>
+    <meta name="twitter:title" content="ResoFlex Elite — Own Your Health. Command Your Day.">
+    <meta property="og:description" content="ResoFlex Elite Sales OS — Premium treadmills, walking pads &amp; spin bikes for Nigeria. PowerSaver tech, 2-year warranty, nationwide insured delivery. Launch deal: 22% OFF with code RESO22.">
+    <meta name="twitter:description" content="ResoFlex Elite Sales OS — Premium treadmills, walking pads &amp; spin bikes for Nigeria. PowerSaver tech, 2-year warranty, nationwide insured delivery. Launch deal: 22% OFF with code RESO22.">
+    <meta property="og:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/dHbshoVo9TN6VIBwuG56Yew1AJv2/social-images/social-1779028008787-07CF393C-D998-42F1-87CF-33A49CE43EDB.webp">
+    <meta name="twitter:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/dHbshoVo9TN6VIBwuG56Yew1AJv2/social-images/social-1779028008787-07CF393C-D998-42F1-87CF-33A49CE43EDB.webp">
+  </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
