@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /order/
+Disallow: /order-status/
+Disallow: /__qa/
+Sitemap: https://wellness.resofit.fit/sitemap.xml
