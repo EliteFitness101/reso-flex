@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/sitemap.xml", "has": [{ "type": "host", "value": "wellness.resofit.fit" }], "destination": "/wellness-sitemap.xml" },
+    { "source": "/robots.txt", "has": [{ "type": "host", "value": "wellness.resofit.fit" }], "destination": "/wellness-robots.txt" },
     { "source": "/product/:slug", "destination": "/index.html" },
     { "source": "/products/:slug", "destination": "/index.html" },
     { "source": "/shop/products/:slug", "destination": "/index.html" }
