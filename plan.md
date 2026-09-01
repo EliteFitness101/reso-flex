@@ -8,7 +8,15 @@ This repository is the production application core for the ResoFit ecosystem and
 - Administrative/member/partner dashboard: `EliteFitness101/reso-dash` (separate surface; not the canonical commerce/intelligence source of truth).
 - Canonical Supabase project: `resonance-fitness` (`vbqjvmnhdtdhmeeudqnn`, eu-west-1).
 - Active canonical Paystack webhook: `https://vbqjvmnhdtdhmeeudqnn.supabase.co/functions/v1/paystack-webhook`.
-- Proposed/current Paystack return surface: `https://dashboard.resofit.fit/payment/callback`; this URL is recorded as the dashboard callback contract, but its frontend route implementation is not asserted here without repository-level route evidence.
+- Dashboard callback contract: `https://dashboard.resofit.fit/payment/callback`.
+
+## Media delivery contract
+Cloudinary is the visual/publishing delivery layer. Publishing videos use `resofit/buffer/videos/`; no `/blob/` subfolder. Originals remain immutable. Delivery transformations are dynamic and responsive.
+
+The primary ResoFit hero now consumes the supplied Cloudinary brand-film public ID through a dynamic `f_auto,q_auto` delivery URL with a generated poster. This is intentionally separate from the 270 ImageKit product assets and 38 Paystack products.
+
+## Catalog search contract
+The global navigation now exposes a mobile-first catalog search control. Search events are dispatched through the application and consumed by the canonical product grid, matching product name, tagline, SKU, handle and feature text without creating a second catalog source.
 
 ## Verified Paystack webhook contract
 The live Supabase Edge Function `paystack-webhook` is ACTIVE at version 27 with JWT verification disabled because Paystack signs webhook requests rather than sending a user JWT. The deployed function verifies `x-paystack-signature` using HMAC-SHA-512 over the raw request body and performs constant-time comparison.
@@ -24,7 +32,7 @@ After signature verification it:
 8. Handles the existing upsell path when Paystack metadata identifies an upsell.
 9. Marks the payment event processed.
 
-The webhook explicitly does **not** forward canonical payment processing to Make.com or n8n. The ResoFit event/payment ledgers are authoritative; external automation remains an optional adapter.
+The webhook explicitly does **not** forward canonical payment processing to Make.com or n8n. External automation remains an optional adapter.
 
 ## Core loop
 NATIONAL → GLOBAL SIGNALS → SEARCH/CONTENT/PRODUCT/SERVICE GAPS → POPULAR REQUESTS → COMPETITOR/MARKET SIGNALS → CHATB2K INTELLIGENCE → OPPORTUNITY → SOLUTION → VERIFY → REGISTER → PAYMENT/ORDER/BOOKING → FULFILLMENT → DELIVERY/TRACKING → MEMBER EXPERIENCE → REFERRAL/REPEAT/UPSELL/CROSS-SELL → FEEDBACK.
@@ -65,10 +73,10 @@ Gemini, OpenAI/ChatGPT and other approved providers are model adapters behind Ch
 - Members: `public.resofit_member_states`, dashboard entitlements, preferences, chat memory/sessions
 
 ## Production gates
-Build → typecheck/lint → API smoke → database health → catalog integrity → content opportunity generation → canonical registration dry-run → payment/webhook verification → callback-route verification → fulfillment verification → security/advisory audit → deployment runtime audit.
+Build → typecheck/lint → API smoke → database health → catalog integrity → content opportunity generation → canonical registration dry-run → payment/webhook verification → callback-route verification → fulfillment verification → security/advisory audit → deployment runtime audit → visual CDN verification → global search verification.
 
 ## Non-negotiable invariants
-Server-side prices only. Secrets server-side only. Signed payment events. Idempotent events. RLS on exposed data. Authorized source acquisition only. Provider failures cannot overwrite canonical business state. Unknown identifiers fail closed. Make/n8n cannot become the canonical payment or business-state processor.
+Server-side prices only. Secrets server-side only. Signed payment events. Idempotent events. RLS on exposed data. Authorized source acquisition only. Provider failures cannot overwrite canonical business state. Unknown identifiers fail closed. Make/n8n cannot become the canonical payment or business-state processor. Cloudinary originals are never destructively transformed.
 
 ## Evidence rule
 Architecture claims may describe intended design; production certification must be supported by current live evidence. A configured URL is not equivalent to a verified route, and an implementation is not equivalent to a verified deployment.
