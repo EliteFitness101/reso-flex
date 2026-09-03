@@ -14,6 +14,7 @@ const ROLE_LABEL: Record<AssetRole, string> = {
 };
 
 const ORDER: AssetRole[] = ["hero", "gallery_01", "gallery_02", "gallery_03", "lifestyle", "detail"];
+const MEDIA_TIMEOUT_MS = 8000;
 
 type ImgProps = {
   asset: VerifiedAsset;
@@ -24,22 +25,34 @@ type ImgProps = {
   onLoad?: () => void;
 };
 
-const IkImage = ({ asset, alt, sizes, eager, className, onLoad }: ImgProps) => (
-  <img
-    src={ikUrl(asset.path, { w: 960 })}
-    srcSet={ikSrcSet(asset.path)}
-    sizes={sizes}
-    alt={alt}
-    width={asset.width}
-    height={asset.height}
-    loading={eager ? "eager" : "lazy"}
-    decoding="async"
-    fetchPriority={eager ? "high" : "auto"}
-    style={{ backgroundImage: `url(${ikLqip(asset.path)})`, backgroundSize: "cover" }}
-    className={className ?? "h-full w-full object-cover"}
-    onLoad={onLoad}
-  />
-);
+const IkImage = ({ asset, alt, sizes, eager, className, onLoad }: ImgProps) => {
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setFailed(true), MEDIA_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [asset.path]);
+
+  if (failed) return <ProductVisualFallback name={alt.replace(/ — (alternate view|in use|detail view)$/, "")} role="hero" className={className} />;
+
+  return (
+    <img
+      src={ikUrl(asset.path, { w: 960 })}
+      srcSet={ikSrcSet(asset.path)}
+      sizes={sizes}
+      alt={alt}
+      width={asset.width}
+      height={asset.height}
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+      fetchPriority={eager ? "high" : "auto"}
+      style={{ backgroundImage: `url(${ikLqip(asset.path)})`, backgroundSize: "cover" }}
+      className={className ?? "h-full w-full object-cover"}
+      onLoad={onLoad}
+      onError={() => setFailed(true)}
+    />
+  );
+};
 
 export const ProductHeroImage = ({
   sku,
@@ -69,7 +82,7 @@ export const ProductHeroImage = ({
   );
 };
 
-/** Full verified image grid. Missing roles are skipped; missing media gets a premium fallback. */
+/** Full verified image grid. Missing roles are skipped; missing/slow media gets a premium fallback. */
 export default function ProductImageGrid({ sku, name }: { sku: string; name: string }) {
   const media = getVerifiedMedia(sku);
   const [active, setActive] = useState<AssetRole>("hero");
@@ -157,7 +170,7 @@ export default function ProductImageGrid({ sku, name }: { sku: string; name: str
                   decoding="async"
                   className="h-full w-full object-cover"
                   onError={(event) => {
-                    event.currentTarget.style.display = "none";
+                    event.currentTarget.style.opacity = "0";
                     event.currentTarget.parentElement?.classList.add("bg-noir-900");
                   }}
                 />
