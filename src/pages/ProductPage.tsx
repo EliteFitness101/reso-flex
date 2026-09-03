@@ -8,8 +8,16 @@ import { getVerifiedMedia, getVerifiedMediaBySlug } from "@/core/media/imagekit.
 import { ikOg, ikUrl } from "@/lib/imagekit";
 import { getResoFlexPaystackPage } from "@/data/resoflex-paystack-pages";
 
+const MEDIA_TIMEOUT_MS = 8000;
+
 function PaystackImage({ src, alt, role }: { src: string; alt: string; role: "hero" | "lifestyle" | "detail" }) {
   const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setFailed(true), MEDIA_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [src]);
+
   if (failed) return <ProductVisualFallback name={alt} role={role} className="aspect-[4/3]" />;
   return (
     <img
@@ -19,6 +27,7 @@ function PaystackImage({ src, alt, role }: { src: string; alt: string; role: "he
       fetchPriority={role === "hero" ? "high" : "auto"}
       decoding="async"
       style={{ width: "100%", height: "auto", display: "block" }}
+      onLoad={() => setFailed(false)}
       onError={() => setFailed(true)}
     />
   );
@@ -45,25 +54,8 @@ export default function ProductPage() {
       const heroPath = verified?.assets.hero?.path ?? null;
       const image = heroPath ? ikOg(heroPath) : (product.image ?? null);
       setSeo({ title: product.seo.title || `${product.name} — ResoFlex`, description: product.seo.description || product.description, path, image, type: "product" });
-      const removeProduct = setJsonLd("product", productJsonLd({
-        sku: product.sku,
-        name: product.name,
-        description: product.description || product.tagline,
-        image,
-        images: verifiedImages,
-        price: product.price,
-        compareAtPrice: product.compareAtPrice,
-        currency: product.currency,
-        path,
-        brand: "ResoFlex",
-        category: product.category,
-        inStock: true,
-      }));
-      const removeCrumbs = setJsonLd("breadcrumb", breadcrumbJsonLd([
-        { name: "Home", path: "/" },
-        { name: "Shop", path: "/shop" },
-        { name: product.name, path },
-      ]));
+      const removeProduct = setJsonLd("product", productJsonLd({ sku: product.sku, name: product.name, description: product.description || product.tagline, image, images: verifiedImages, price: product.price, compareAtPrice: product.compareAtPrice, currency: product.currency, path, brand: "ResoFlex", category: product.category, inStock: true }));
+      const removeCrumbs = setJsonLd("breadcrumb", breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "Shop", path: "/shop" }, { name: product.name, path }]));
       return () => { removeProduct(); removeCrumbs(); };
     }
 
@@ -71,23 +63,8 @@ export default function ProductPage() {
       const path = `/product/${paystackProduct.slug}`;
       const image = paystackProduct.images[0] ?? null;
       setSeo({ title: `${paystackProduct.title} — ResoFlex`, description: paystackProduct.title, path, image, type: "product" });
-      const removeProduct = setJsonLd("product", productJsonLd({
-        sku: paystackProduct.slug,
-        name: paystackProduct.title,
-        description: paystackProduct.title,
-        image,
-        images: paystackProduct.images,
-        price: paystackProduct.priceNgn,
-        currency: "NGN",
-        path,
-        brand: "ResoFlex",
-        inStock: true,
-      }));
-      const removeCrumbs = setJsonLd("breadcrumb", breadcrumbJsonLd([
-        { name: "Home", path: "/" },
-        { name: "Shop", path: "/shop" },
-        { name: paystackProduct.title, path },
-      ]));
+      const removeProduct = setJsonLd("product", productJsonLd({ sku: paystackProduct.slug, name: paystackProduct.title, description: paystackProduct.title, image, images: paystackProduct.images, price: paystackProduct.priceNgn, currency: "NGN", path, brand: "ResoFlex", inStock: true }));
+      const removeCrumbs = setJsonLd("breadcrumb", breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "Shop", path: "/shop" }, { name: paystackProduct.title, path }]));
       return () => { removeProduct(); removeCrumbs(); };
     }
   }, [product, paystackProduct]);
@@ -112,17 +89,9 @@ export default function ProductPage() {
             )}
           </section>
           <section className="space-y-5 lg:sticky lg:top-6">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.24em] text-gold/70">ResoFlex Signature Commerce</p>
-              <h1 className="mt-2 text-2xl font-semibold leading-tight text-white md:text-4xl">{paystackProduct.title}</h1>
-            </div>
+            <div><p className="text-xs font-medium uppercase tracking-[0.24em] text-gold/70">ResoFlex Signature Commerce</p><h1 className="mt-2 text-2xl font-semibold leading-tight text-white md:text-4xl">{paystackProduct.title}</h1></div>
             <p className="text-xl font-semibold text-white">NGN {paystackProduct.priceNgn.toLocaleString("en-NG")}</p>
-            <button
-              className="w-full rounded-xl border border-gold/40 bg-gold px-5 py-4 text-sm font-semibold uppercase tracking-[0.16em] text-black transition hover:bg-gold/90"
-              onClick={() => { window.location.href = paystackProduct.checkoutUrl; }}
-            >
-              Buy Now
-            </button>
+            <button className="w-full rounded-xl border border-gold/40 bg-gold px-5 py-4 text-sm font-semibold uppercase tracking-[0.16em] text-black transition hover:bg-gold/90" onClick={() => { window.location.href = paystackProduct.checkoutUrl; }}>Buy Now</button>
           </section>
         </div>
       </main>
@@ -131,32 +100,19 @@ export default function ProductPage() {
 
   if (!product) {
     if (media) {
-      return (
-        <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 md:py-10">
-          <h1 className="mb-6 text-2xl font-semibold text-white md:text-4xl">{media.name}</h1>
-          <ProductImageGrid sku={media.sku} name={media.name} />
-          <button className="mt-6 rounded-xl border border-gold/40 bg-gold px-5 py-3 font-semibold text-black" onClick={() => navigate("/#products")}>Enquire / Order</button>
-        </main>
-      );
+      return <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 md:py-10"><h1 className="mb-6 text-2xl font-semibold text-white md:text-4xl">{media.name}</h1><ProductImageGrid sku={media.sku} name={media.name} /><button className="mt-6 rounded-xl border border-gold/40 bg-gold px-5 py-3 font-semibold text-black" onClick={() => navigate("/#products")}>Enquire / Order</button></main>;
     }
     return <ProductVisualFallback name="ResoFlex Product" role="hero" className="min-h-screen" />;
   }
 
-  const checkout = () => {
-    const url = getCheckoutUrl(product.handle);
-    if (url) window.location.href = url;
-    else navigate("/");
-  };
+  const checkout = () => { const url = getCheckoutUrl(product.handle); if (url) window.location.href = url; else navigate("/"); };
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 md:py-10">
       <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
         <ProductImageGrid sku={product.sku} name={product.name} />
         <section className="space-y-5 lg:sticky lg:top-6">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.24em] text-gold/70">ResoFlex Signature Commerce</p>
-            <h1 className="mt-2 text-2xl font-semibold leading-tight text-white md:text-4xl">{product.name}</h1>
-          </div>
+          <div><p className="text-xs font-medium uppercase tracking-[0.24em] text-gold/70">ResoFlex Signature Commerce</p><h1 className="mt-2 text-2xl font-semibold leading-tight text-white md:text-4xl">{product.name}</h1></div>
           <p className="text-xl font-semibold text-white">{product.priceLabel}</p>
           <button className="w-full rounded-xl border border-gold/40 bg-gold px-5 py-4 text-sm font-semibold uppercase tracking-[0.16em] text-black transition hover:bg-gold/90" onClick={checkout}>Buy Now</button>
         </section>
