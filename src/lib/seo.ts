@@ -62,26 +62,39 @@ export function productJsonLd(p: {
   name: string;
   description?: string | null;
   image?: string | null;
+  images?: string[];
   price: number;
+  compareAtPrice?: number;
   currency?: string;
   path: string;
+  brand?: string;
+  category?: string;
   inStock?: boolean;
+  url?: string;
 }) {
+  const images = [p.image, ...(p.images ?? [])].filter((value): value is string => Boolean(value));
+  const offer: Record<string, unknown> = {
+    "@type": "Offer",
+    url: p.url ?? `${SITE}${p.path}`,
+    priceCurrency: p.currency ?? "NGN",
+    price: p.price,
+    availability: `https://schema.org/${p.inStock === false ? "OutOfStock" : "InStock"}`,
+    itemCondition: "https://schema.org/NewCondition",
+  };
+  if (p.compareAtPrice && p.compareAtPrice > p.price) {
+    offer.priceValidUntil = undefined;
+  }
+
   return {
     "@context": "https://schema.org",
     "@type": "Product",
     sku: p.sku,
     name: p.name,
     description: p.description ?? p.name,
-    image: p.image ? [p.image] : undefined,
-    brand: { "@type": "Brand", name: "ResoFlex" },
-    offers: {
-      "@type": "Offer",
-      url: `${SITE}${p.path}`,
-      priceCurrency: p.currency ?? "NGN",
-      price: p.price,
-      availability: `https://schema.org/${p.inStock === false ? "OutOfStock" : "InStock"}`,
-    },
+    image: images.length ? images : undefined,
+    brand: { "@type": "Brand", name: p.brand ?? "ResoFlex" },
+    category: p.category,
+    offers: offer,
   };
 }
 
