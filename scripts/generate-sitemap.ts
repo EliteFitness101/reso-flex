@@ -4,8 +4,6 @@ import { writeFileSync } from "fs";
 import { resolve } from "path";
 
 const BASE_URL = "https://shop.resofit.fit";
-const SUPABASE_URL = "https://vbqjvmnhdtdhmeeudqnn.supabase.co";
-const SUPABASE_KEY = "sb_publishable_fu_Y3KQipfuomFQyd3zNtA_rG9XpOfG";
 
 interface SitemapEntry {
   path: string;
@@ -13,10 +11,125 @@ interface SitemapEntry {
   priority?: string;
 }
 
-type LiveProductRow = {
-  handle: string;
-  published: boolean;
-};
+// Authoritative published-product handle manifest generated from the production
+// catalogue. Keeping the sitemap build deterministic avoids making production
+// builds depend on Supabase REST authentication/network availability.
+const LIVE_PRODUCT_HANDLES = [
+  "naijafit-personalized-meal-and-workout-plan",
+  "naijafit-ngn-1-000-nigerian-metabolic-blueprint",
+  "naijafit-enhanced-wellness-meal-plan",
+  "heritage-meals-the-achua-system",
+  "2in1-arm-shaper-sweat-arm-band-plus-free-meal-workout-plan",
+  "resoflex-lovers-platform-sovereign-flagship-allocation",
+  "premium-quality-military-knuckle-gym-gloves-plus-90-day-fitness-evolution-blueprint",
+  "pearlzie-gym-fitness-drinking-sport-water-bottle-kettle-1300ml-1-3l-blue-plus-wellness-guide",
+  "ladies-fitness-long-casual-trousers-taupe",
+  "single-status-advert",
+  "back-massager-magic-fitness-stretch-equipment-plus-90-day-meal-workout-guide",
+  "daily-posting-package",
+  "pouch-waist-bag-and-fitness-purse",
+  "weekly-ads-package",
+  "fitness-exercise-sport-wrist-band-free-bodybuilding-plan",
+  "resoflex-fitness-hand-grip",
+  "abdominal-wheeler-roller-automatic-rebound-abs-roller-plus-90-day-meal-workout-guide",
+  "4-wheels-abdominal-wheel-roller-with-knee-pad-mat-plus-digital-meal-workout-plan-green-pack",
+  "gym-half-finger-sports-fitness-wrist-glove-1-pair",
+  "fitness-water-bottle-900ml-plus-free-hydration-plan",
+  "smart-fitness-foot-stimulator-massager-plus-free-anti-inflammatory-meal-workout-guide",
+  "6-pack-smart-fitness-mobile-gym-single-abdominal-reduction-meal-workout-plan",
+  "9-1ft-adjustable-jump-rope-fitness-skipping-rope-soft-foam",
+  "tummy-trimmer-fitness-exerciser",
+  "sports-pressurized-elastic-knee-pads-support-fitness-gear-1pc",
+  "steel-wire-skipping-rope",
+  "monthly-ads-package",
+  "broadcast-message-status-combo-blast",
+  "repost-on-partner-influencer-networks",
+  "full-whatsapp-marketing-takeover",
+  "unisex-premium-hot-power-fitness-belt-black",
+  "revoflex-xtreme-fitness-plus-90-day-abdominal-meal-workout-plan",
+  "fitness-exercise-sport-wrist-band-plus-free-meal-plan",
+  "the-resoflex-ascension-bundle",
+  "weight-gain-gummies",
+  "resoflex-gym-station",
+  "resistance-bands-set-100-lbs-tube-bands-11-piece-set",
+  "resoflex-elite-spin-bike",
+  "resoflex-slim-walking-pad",
+  "curve-enhancement-stack",
+  "resoflex-expansion-module-duo",
+  "core-recovery-stack",
+  "b2k-003",
+  "resoflex-micronized-creatine-monohydrate",
+  "elite-90-day-metabolic-plan",
+  "b2k-001",
+  "power-station-gym",
+  "resoflex-4hp-elite-treadmill",
+  "resoflex-expansion-module-blue",
+  "heritage-30-day-meal-plan",
+  "b2k-002",
+  "multi-station-power-tower",
+  "pro-foam-roller-mat-set",
+  "b2k-elite-90-day-vip-bundle",
+  "resoflex-hiit-cardio-starter",
+  "resoflex-air-rower-ergometer",
+  "corporate-wellness-starter-kit",
+  "glutes-sculpt-kit",
+  "alpha-station-power-rack",
+  "home-gym-pro-kit",
+  "resoflex-recovery-mobility-bundle",
+  "resoflex-yoga-flexibility-starter",
+  "90-day-body-reset-program",
+  "resoflex-pro-indoor-studio-cycle",
+  "adjustable-heavy-duty-workout-bench",
+  "15kg-cast-iron-set",
+  "commercial-station-gym-hub",
+  "resoflex-lightweight-running-hydration-vest",
+  "resoflex-men-performance-training-shorts",
+  "resoflex-men-technical-performance-compression-set",
+  "resoflex-mens-compression-tank",
+  "res-dig-reset",
+  "res-bundle-apex",
+  "resoflex-mechanical-padded-gym-weightlifting-gloves",
+  "resoflex-core-short-sleeve-legging-set",
+  "res-iron-15",
+  "25-steel-boned-latex-shaper",
+  "resoflex-50kg-chrome-dumbbell-and-barbell-home-gym-set",
+  "resoflex-commercial-station-gym-hub",
+  "resoflex-stainless-steel-gym-shaker-bottle",
+  "resoflex-pro-combat-striking-boxing-gloves",
+  "heritage-meal-plan",
+  "resoflex-sculpt-long-sleeve-biker-set",
+  "resoflex-women-curvy-collection-obsidian-black",
+  "resoflex-kinetic",
+  "resoflex-men-aero-dry-running-t-shirt",
+  "res-iron-50",
+  "resoflex-pro-zip-long-sleeve-legging-set",
+  "resoflex-essentials-chrome-lifting-set",
+  "resoflex-adjustable-heavy-duty-workout-bench",
+  "resoflex-commercial-rubber-hex-dumbbell-tower",
+  "resoflex-commercial-rubber-bumper-plates-set",
+  "b2k-004",
+  "resoflex-commercial-functional-trainer",
+  "res-iron-30",
+  "resoflex-duraq-blue-green-rose-gold",
+  "res-coach-01",
+  "resoflex-speedwork-running-waist-belt",
+  "naijafit-7day-free",
+  "resoflex-mobility-and-strength-resistance-bands-set",
+  "resoflex-men-heavyweight-sleeveless-gym-hoodie",
+  "resoflex-ascension-bundle",
+  "resoflex-studio-rubber-hex-dumbbells",
+  "resoflex-combat-training-heavy-boxing-bag",
+  "res-dig-nut",
+  "enhanced-meal-move",
+  "reso-grip-pair-multi-color",
+  "resoflex-athletic-muscle-recovery-lotion-and-skin-balm",
+  "resoflex-commander",
+  "resoflex-men-athletic-balaclava-tracksuit",
+  "fitness-evolution",
+  "resoflex-ladies-2-piece-ribbed-activewear-set",
+  "7-day-nigerian-reset",
+  "butt-and-curves-guide",
+] as const;
 
 const STATIC_ROUTES: SitemapEntry[] = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
@@ -40,82 +153,6 @@ const STATIC_ROUTES: SitemapEntry[] = [
   { path: "/wishlist", changefreq: "daily", priority: "0.5" },
 ];
 
-const FALLBACK_PRODUCT_HANDLES = [
-  "resoflex-commercial-functional-trainer",
-  "resoflex-adjustable-heavy-duty-workout-bench",
-  "resoflex-commercial-rubber-bumper-plates-set",
-  "resoflex-studio-rubber-hex-dumbbells",
-  "resoflex-50kg-chrome-dumbbell-and-barbell-home-gym-set",
-  "resoflex-essentials-chrome-lifting-set",
-  "resoflex-commercial-rubber-hex-dumbbell-tower",
-  "resoflex-station-gym",
-  "resoflex-combat-training-heavy-boxing-bag",
-  "resoflex-pro-combat-striking-boxing-gloves",
-  "resoflex-mobility-and-strength-resistance-bands-set",
-  "resoflex-lightweight-running-hydration-vest",
-  "resoflex-speedwork-running-waist-belt",
-  "resoflex-stainless-steel-gym-shaker-bottle",
-  "resoflex-mechanical-padded-gym-weightlifting-gloves",
-  "resoflex-duraq-blue-green-rose-gold",
-  "reso-grip-pair-multi-color",
-  "resoflex-mens-tank",
-  "resoflex-men-technical-performance-compression-set",
-  "resoflex-men-athletic-balaclava-tracksuit",
-  "resoflex-men-performance-training-shorts",
-  "resoflex-men-aero-dry-running-t-shirt",
-  "resoflex-men-heavyweight-sleeveless-gym-hoodie",
-  "resoflex-ladies-2piece-ribbed-activewear-set",
-  "resoflex-women-curvy-collection-obsidian-black",
-  "resoflex-sculpt-long-sleeve-biker-set",
-  "resoflex-pro-zip-long-sleeve-legging-set",
-  "resoflex-core-short-sleeve-legging-set",
-  "25-steel-boned-latex-shaper",
-  "resoflex-athletic-muscle-recovery-lotion-and-skin-balm",
-  "naijafit-7day-free",
-  "heritage-meal-plan",
-  "enhanced-meal-move",
-  "fitness-evolution",
-  "resoflex-kinetic",
-  "resoflex-commander",
-  "b2k-elite-90-day-vip-bundle",
-  "resoflex-ascension-bundle",
-  "resoflex-15kg-cast-iron-set",
-  "resoflex-30kg-cast-iron-set",
-  "resoflex-apex-bundle",
-];
-
-async function getLiveProductHandles(): Promise<string[]> {
-  try {
-    const url = `${SUPABASE_URL}/rest/v1/products?select=handle,published&published=eq.true&order=created_at.desc&limit=250`;
-    const response = await fetch(url, {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-      },
-    });
-
-    if (!response.ok) {
-      console.warn(`Live catalogue sitemap fetch failed: HTTP ${response.status}; using fallback handles.`);
-      return FALLBACK_PRODUCT_HANDLES;
-    }
-
-    const rows = (await response.json()) as LiveProductRow[];
-    const handles = rows
-      .map((row) => row.handle?.trim())
-      .filter((handle): handle is string => Boolean(handle));
-
-    if (handles.length === 0) {
-      console.warn("Live catalogue sitemap fetch returned no published handles; using fallback handles.");
-      return FALLBACK_PRODUCT_HANDLES;
-    }
-
-    return handles;
-  } catch (error) {
-    console.warn("Live catalogue sitemap fetch failed; using fallback handles.", error);
-    return FALLBACK_PRODUCT_HANDLES;
-  }
-}
-
 function generateSitemap(list: SitemapEntry[]) {
   const unique = new Map(list.map((entry) => [entry.path, entry]));
   const urls = [...unique.values()].map((e) =>
@@ -138,10 +175,9 @@ function generateSitemap(list: SitemapEntry[]) {
   ].join("\n");
 }
 
-const productHandles = await getLiveProductHandles();
 const entries: SitemapEntry[] = [
   ...STATIC_ROUTES,
-  ...productHandles.map((handle) => ({
+  ...LIVE_PRODUCT_HANDLES.map((handle) => ({
     path: `/product/${encodeURIComponent(handle)}`,
     changefreq: "weekly" as const,
     priority: "0.8",
@@ -149,4 +185,4 @@ const entries: SitemapEntry[] = [
 ];
 
 writeFileSync(resolve("public/sitemap.xml"), generateSitemap(entries));
-console.log(`sitemap.xml written (${new Set(entries.map((entry) => entry.path)).size} entries; ${productHandles.length} live product handles)`);
+console.log(`sitemap.xml written (${new Set(entries.map((entry) => entry.path)).size} entries; ${LIVE_PRODUCT_HANDLES.length} published product handles)`);
