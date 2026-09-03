@@ -13,5 +13,6 @@ Allow: /
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /__qa/
 
-Sitemap: https://reso-flex.lovable.app/sitemap.xml
+Sitemap: https://shop.resofit.fit/sitemap.xml
