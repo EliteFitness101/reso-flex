@@ -1,13 +1,28 @@
-// FILE: src/pages/ProductPage.tsx
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProductBySlug, getCheckoutUrl } from "@/core/product.resolver";
 import { setSeo, setJsonLd, productJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import ProductImageGrid from "@/components/product/ProductImageGrid";
+import ProductVisualFallback from "@/components/product/ProductVisualFallback";
 import { getVerifiedMedia, getVerifiedMediaBySlug } from "@/core/media/imagekit.media";
 import { ikOg, ikUrl } from "@/lib/imagekit";
 import { getResoFlexPaystackPage } from "@/data/resoflex-paystack-pages";
+
+function PaystackImage({ src, alt, role }: { src: string; alt: string; role: "hero" | "lifestyle" | "detail" }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return <ProductVisualFallback name={alt} role={role} className="aspect-[4/3]" />;
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading={role === "hero" ? "eager" : "lazy"}
+      fetchPriority={role === "hero" ? "high" : "auto"}
+      decoding="async"
+      style={{ width: "100%", height: "auto", display: "block" }}
+      onError={() => setFailed(true)}
+    />
+  );
+}
 
 export default function ProductPage() {
   const { slug } = useParams();
@@ -78,20 +93,38 @@ export default function ProductPage() {
   }, [product, paystackProduct]);
 
   if (!product && paystackProduct) {
+    const hasVerifiedMedia = Boolean(media?.assets.hero || media?.assets.lifestyle || media?.assets.detail);
     return (
-      <main style={{ padding: 20 }}>
-        <h1>{paystackProduct.title}</h1>
-        {paystackProduct.images.length > 0 ? (
-          <div style={{ display: "grid", gap: 12 }}>
-            {paystackProduct.images.map((image) => (
-              <img key={image} src={image} alt={paystackProduct.title} loading="lazy" style={{ width: "100%", height: "auto" }} />
-            ))}
-          </div>
-        ) : null}
-        <p>Price: NGN {paystackProduct.priceNgn.toLocaleString("en-NG")}</p>
-        <button onClick={() => { window.location.href = paystackProduct.checkoutUrl; }}>
-          Buy Now
-        </button>
+      <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 md:py-10">
+        <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
+          <section aria-label={`${paystackProduct.title} product visuals`}>
+            {hasVerifiedMedia && media ? (
+              <ProductImageGrid sku={media.sku} name={media.name} />
+            ) : paystackProduct.images.length > 0 ? (
+              <div className="grid gap-3">
+                <PaystackImage src={paystackProduct.images[0]} alt={paystackProduct.title} role="hero" />
+                {paystackProduct.images.slice(1, 4).map((image, index) => (
+                  <PaystackImage key={image} src={image} alt={`${paystackProduct.title} detail ${index + 1}`} role={index === 0 ? "lifestyle" : "detail"} />
+                ))}
+              </div>
+            ) : (
+              <ProductVisualFallback name={paystackProduct.title} role="hero" className="aspect-[4/3]" />
+            )}
+          </section>
+          <section className="space-y-5 lg:sticky lg:top-6">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.24em] text-gold/70">ResoFlex Signature Commerce</p>
+              <h1 className="mt-2 text-2xl font-semibold leading-tight text-white md:text-4xl">{paystackProduct.title}</h1>
+            </div>
+            <p className="text-xl font-semibold text-white">NGN {paystackProduct.priceNgn.toLocaleString("en-NG")}</p>
+            <button
+              className="w-full rounded-xl border border-gold/40 bg-gold px-5 py-4 text-sm font-semibold uppercase tracking-[0.16em] text-black transition hover:bg-gold/90"
+              onClick={() => { window.location.href = paystackProduct.checkoutUrl; }}
+            >
+              Buy Now
+            </button>
+          </section>
+        </div>
       </main>
     );
   }
@@ -99,14 +132,14 @@ export default function ProductPage() {
   if (!product) {
     if (media) {
       return (
-        <div style={{ padding: 20 }}>
-          <h1>{media.name}</h1>
+        <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 md:py-10">
+          <h1 className="mb-6 text-2xl font-semibold text-white md:text-4xl">{media.name}</h1>
           <ProductImageGrid sku={media.sku} name={media.name} />
-          <button onClick={() => navigate("/#products")}>Enquire / Order</button>
-        </div>
+          <button className="mt-6 rounded-xl border border-gold/40 bg-gold px-5 py-3 font-semibold text-black" onClick={() => navigate("/#products")}>Enquire / Order</button>
+        </main>
       );
     }
-    return <div>Product not found</div>;
+    return <ProductVisualFallback name="ResoFlex Product" role="hero" className="min-h-screen" />;
   }
 
   const checkout = () => {
@@ -116,11 +149,18 @@ export default function ProductPage() {
   };
 
   return (
-    <main style={{ padding: 20 }}>
-      <h1>{product.name}</h1>
-      <ProductImageGrid sku={product.sku} name={product.name} />
-      <p>Price: {product.priceLabel}</p>
-      <button onClick={checkout}>Buy Now</button>
+    <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 md:py-10">
+      <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
+        <ProductImageGrid sku={product.sku} name={product.name} />
+        <section className="space-y-5 lg:sticky lg:top-6">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.24em] text-gold/70">ResoFlex Signature Commerce</p>
+            <h1 className="mt-2 text-2xl font-semibold leading-tight text-white md:text-4xl">{product.name}</h1>
+          </div>
+          <p className="text-xl font-semibold text-white">{product.priceLabel}</p>
+          <button className="w-full rounded-xl border border-gold/40 bg-gold px-5 py-4 text-sm font-semibold uppercase tracking-[0.16em] text-black transition hover:bg-gold/90" onClick={checkout}>Buy Now</button>
+        </section>
+      </div>
     </main>
   );
 }
