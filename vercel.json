@@ -4,6 +4,7 @@
     { "source": "/robots.txt", "has": [{ "type": "host", "value": "wellness.resofit.fit" }], "destination": "/wellness-robots.txt" },
     { "source": "/product/:slug", "destination": "/index.html" },
     { "source": "/products/:slug", "destination": "/index.html" },
-    { "source": "/shop/products/:slug", "destination": "/index.html" }
+    { "source": "/shop/products/:slug", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
