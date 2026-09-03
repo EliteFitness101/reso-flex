@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ikLqip, ikSrcSet, ikUrl } from "@/lib/imagekit";
 import { getVerifiedMedia, type AssetRole, type VerifiedAsset } from "@/core/media/imagekit.media";
 import { track } from "@/lib/track";
+import ProductVisualFallback from "@/components/product/ProductVisualFallback";
 
 const ROLE_LABEL: Record<AssetRole, string> = {
   hero: "",
@@ -40,7 +41,6 @@ const IkImage = ({ asset, alt, sizes, eager, className, onLoad }: ImgProps) => (
   />
 );
 
-/** Single hero rendition — product cards, collection grids, featured rails. */
 export const ProductHeroImage = ({
   sku,
   name,
@@ -55,7 +55,7 @@ export const ProductHeroImage = ({
   const media = getVerifiedMedia(sku);
   const hero = media?.assets.hero;
   const startedAt = useRef(performance.now());
-  if (!hero) return null;
+  if (!hero) return <ProductVisualFallback name={name} role="hero" className={className} />;
   return (
     <div className={`relative aspect-[4/3] overflow-hidden bg-noir-900 ${className ?? ""}`}>
       <IkImage
@@ -69,10 +69,7 @@ export const ProductHeroImage = ({
   );
 };
 
-/**
- * Full verified image grid. Renders only roles that have an authentic
- * ImageKit asset — empty roles are skipped, never placeholder-filled.
- */
+/** Full verified image grid. Missing roles are skipped; missing media gets a premium fallback. */
 export default function ProductImageGrid({ sku, name }: { sku: string; name: string }) {
   const media = getVerifiedMedia(sku);
   const [active, setActive] = useState<AssetRole>("hero");
@@ -83,10 +80,10 @@ export default function ProductImageGrid({ sku, name }: { sku: string; name: str
     imageStartedAt.current = performance.now();
   }, [active]);
 
-  if (!media) return null;
+  if (!media) return <ProductVisualFallback name={name} role="hero" />;
 
   const roles = ORDER.filter((r) => media.assets[r]);
-  if (!roles.length) return null;
+  if (!roles.length) return <ProductVisualFallback name={name} role="hero" />;
 
   const current = media.assets[active] ?? media.assets[roles[0]]!;
   const activeIndex = Math.max(0, roles.indexOf(active));
@@ -159,6 +156,10 @@ export default function ProductImageGrid({ sku, name }: { sku: string; name: str
                   loading="lazy"
                   decoding="async"
                   className="h-full w-full object-cover"
+                  onError={(event) => {
+                    event.currentTarget.style.display = "none";
+                    event.currentTarget.parentElement?.classList.add("bg-noir-900");
+                  }}
                 />
               </button>
             );
