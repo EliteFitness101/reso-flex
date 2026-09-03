@@ -6,7 +6,7 @@ import { getProductBySlug, getCheckoutUrl } from "@/core/product.resolver";
 import { setSeo, setJsonLd, productJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import ProductImageGrid from "@/components/product/ProductImageGrid";
 import { getVerifiedMedia, getVerifiedMediaBySlug } from "@/core/media/imagekit.media";
-import { ikOg } from "@/lib/imagekit";
+import { ikOg, ikUrl } from "@/lib/imagekit";
 import { getResoFlexPaystackPage } from "@/data/resoflex-paystack-pages";
 
 export default function ProductPage() {
@@ -20,10 +20,30 @@ export default function ProductPage() {
   useEffect(() => {
     if (product) {
       const path = `/product/${product.handle}`;
-      const heroPath = getVerifiedMedia(product.sku)?.assets.hero?.path ?? null;
-      const image = heroPath ? ikOg(heroPath) : ((product as any).image ?? null);
-      setSeo({ title: `${product.name} — ResoFlex`, description: product.tagline ?? product.name, path, image, type: "product" });
-      const removeProduct = setJsonLd("product", productJsonLd({ sku: product.sku, name: product.name, description: product.tagline, image, price: product.now, path }));
+      const verified = getVerifiedMedia(product.sku);
+      const verifiedImages = verified
+        ? ["hero", "gallery_01", "gallery_02", "gallery_03", "lifestyle", "detail"]
+            .map((role) => verified.assets[role as keyof typeof verified.assets])
+            .filter(Boolean)
+            .map((asset) => ikUrl(asset!.path, { w: 1200 }))
+        : [];
+      const heroPath = verified?.assets.hero?.path ?? null;
+      const image = heroPath ? ikOg(heroPath) : (product.image ?? null);
+      setSeo({ title: product.seo.title || `${product.name} — ResoFlex`, description: product.seo.description || product.description, path, image, type: "product" });
+      const removeProduct = setJsonLd("product", productJsonLd({
+        sku: product.sku,
+        name: product.name,
+        description: product.description || product.tagline,
+        image,
+        images: verifiedImages,
+        price: product.price,
+        compareAtPrice: product.compareAtPrice,
+        currency: product.currency,
+        path,
+        brand: "ResoFlex",
+        category: product.category,
+        inStock: true,
+      }));
       const removeCrumbs = setJsonLd("breadcrumb", breadcrumbJsonLd([
         { name: "Home", path: "/" },
         { name: "Shop", path: "/shop" },
@@ -36,7 +56,18 @@ export default function ProductPage() {
       const path = `/product/${paystackProduct.slug}`;
       const image = paystackProduct.images[0] ?? null;
       setSeo({ title: `${paystackProduct.title} — ResoFlex`, description: paystackProduct.title, path, image, type: "product" });
-      const removeProduct = setJsonLd("product", productJsonLd({ sku: paystackProduct.slug, name: paystackProduct.title, description: paystackProduct.title, image, price: paystackProduct.priceNgn, path }));
+      const removeProduct = setJsonLd("product", productJsonLd({
+        sku: paystackProduct.slug,
+        name: paystackProduct.title,
+        description: paystackProduct.title,
+        image,
+        images: paystackProduct.images,
+        price: paystackProduct.priceNgn,
+        currency: "NGN",
+        path,
+        brand: "ResoFlex",
+        inStock: true,
+      }));
       const removeCrumbs = setJsonLd("breadcrumb", breadcrumbJsonLd([
         { name: "Home", path: "/" },
         { name: "Shop", path: "/shop" },
