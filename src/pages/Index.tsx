@@ -25,28 +25,7 @@ const CheckoutModal = lazy(() => import("@/components/sales/CheckoutModal").then
 const WelcomeOnboarding = lazy(() => import("@/components/sales/WelcomeOnboarding").then(m => ({ default: m.WelcomeOnboarding })));
 const UpsellPrompt = lazy(() => import("@/components/sales/UpsellPrompt").then(m => ({ default: m.UpsellPrompt })));
 const Index = () => {
-  const [upsell, setUpsell] = useState<Product | null>(null), [checkout, setCheckout] = useState<Product | null>(null), [welcome, setWelcome] = useState<Product | null>(null);
-  useEffect(() => { captureAttribution(); }, []);
-  const handleBuy = (p: Product) => setUpsell(p);
-  const skipUpsell = () => { if (upsell) { setCheckout(upsell); setUpsell(null); } };
-  return <div className="min-h-screen bg-background pb-24 text-foreground sm:pb-0">
-    <AnnouncementBar /><Nav /><main>
-      <TrustFloatBadge /><HeroCarousel /><TrustBadges /><ProductGrid onBuy={handleBuy} />
-      <LazySection forceAfterMs={2500} minHeight={500}><ImageKitProductGrid onBuy={handleBuy} /></LazySection>
-      <LazySection forceAfterMs={3000} minHeight={700}><StoreDiscovery /></LazySection>
-      <LazySection forceAfterMs={3500} minHeight={300}><Suspense fallback={null}><BundleGrid /></Suspense></LazySection>
-      <LazySection><Suspense fallback={null}><TrustAuthority /></Suspense></LazySection>
-      <LazySection><Suspense fallback={null}><PainMatrix /></Suspense></LazySection>
-      <LazySection><Suspense fallback={null}><UrgencyStrip /></Suspense></LazySection>
-      <LazySection><Suspense fallback={null}><SocialProof /></Suspense></LazySection>
-      <LazySection><Suspense fallback={null}><NaijaFitRev /></Suspense></LazySection>
-      <LazySection><Suspense fallback={null}><Reseller /></Suspense></LazySection>
-      <LazySection><Suspense fallback={null}><FAQ /></Suspense></LazySection>
-    </main>
-    <LazySection minHeight={120}><Suspense fallback={null}><Footer /></Suspense></LazySection><MusicBubble /><ChatBubble />
-    {upsell && <Suspense fallback={null}><UpsellPrompt productSku={upsell.sku} productName={upsell.name} onClose={skipUpsell} /></Suspense>}
-    {checkout && <Suspense fallback={null}><CheckoutModal product={checkout} onClose={() => setCheckout(null)} onPaid={(p) => { setCheckout(null); setWelcome(p); }} /></Suspense>}
-    {welcome && <Suspense fallback={null}><WelcomeOnboarding product={welcome} onClose={() => setWelcome(null)} /></Suspense>}
-  </div>;
-};
-export default Index;
+ const [upsell,setUpsell]=useState<Product|null>(null),[checkout,setCheckout]=useState<Product|null>(null),[welcome,setWelcome]=useState<Product|null>(null);
+ useEffect(()=>{captureAttribution()},[]); const handleBuy=(p:Product)=>setUpsell(p); const skipUpsell=()=>{if(upsell){setCheckout(upsell);setUpsell(null)}};
+ return <div className="min-h-screen bg-background pb-24 text-foreground sm:pb-0"><AnnouncementBar/><Nav/><main><TrustFloatBadge/><HeroCarousel/><TrustBadges/><ProductGrid onBuy={handleBuy}/><LazySection forceAfterMs={2500} minHeight={500}><ImageKitProductGrid onBuy={handleBuy}/></LazySection><LazySection forceAfterMs={3000} minHeight={700}><StoreDiscovery/></LazySection><LazySection forceAfterMs={3500} minHeight={300}><Suspense fallback={null}><BundleGrid/></Suspense></LazySection><LazySection><Suspense fallback={null}><TrustAuthority/></Suspense></LazySection><LazySection><Suspense fallback={null}><PainMatrix/></Suspense></LazySection><LazySection><Suspense fallback={null}><UrgencyStrip/></Suspense></LazySection><LazySection><Suspense fallback={null}><SocialProof/></Suspense></LazySection><LazySection><Suspense fallback={null}><NaijaFitRev/></Suspense></LazySection><div id="reseller"><LazySection><Suspense fallback={null}><Reseller/></Suspense></LazySection></div><LazySection><Suspense fallback={null}><FAQ/></Suspense></LazySection></main><LazySection minHeight={120}><Suspense fallback={null}><Footer/></Suspense></LazySection><MusicBubble/><ChatBubble/>{upsell&&<Suspense fallback={null}><UpsellPrompt productSku={upsell.sku} productName={upsell.name} onClose={skipUpsell}/></Suspense>}{checkout&&<Suspense fallback={null}><CheckoutModal product={checkout} onClose={()=>setCheckout(null)} onPaid={p=>{setCheckout(null);setWelcome(p)}}/></Suspense>}{welcome&&<Suspense fallback={null}><WelcomeOnboarding product={welcome} onClose={()=>setWelcome(null)}/></Suspense>}</div>;
+}; export default Index;
