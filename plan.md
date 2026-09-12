@@ -19,7 +19,7 @@ The primary ResoFit hero now consumes the supplied Cloudinary brand-film public 
 The global navigation now exposes a mobile-first catalog search control. Search events are dispatched through the application and consumed by the canonical product grid, matching product name, tagline, SKU, handle and feature text without creating a second catalog source.
 
 ## Verified Paystack webhook contract
-The live Supabase Edge Function `paystack-webhook` is ACTIVE at version 27 with JWT verification disabled because Paystack signs webhook requests rather than sending a user JWT. The deployed function verifies `x-paystack-signature` using HMAC-SHA-512 over the raw request body and performs constant-time comparison.
+The live Supabase Edge Function `paystack-webhook` is ACTIVE at **version 35** as verified in production on 12 September 2026. JWT verification is disabled because Paystack signs webhook requests rather than sending a user JWT. The deployed function verifies `x-paystack-signature` using HMAC-SHA-512 over the raw request body and constant-time comparison.
 
 After signature verification it:
 1. Parses the Paystack event and extracts `data.reference`.
@@ -30,7 +30,8 @@ After signature verification it:
 6. Upserts `public.revenue_events`.
 7. Emits canonical `payment.succeeded` into `public.resofit_events` with an idempotency key and attribution fields.
 8. Handles the existing upsell path when Paystack metadata identifies an upsell.
-9. Marks the payment event processed.
+9. Sends a server-side TikTok Purchase event using `paystack:<reference>` as the deduplication event ID when the Events API credential is configured.
+10. Marks the payment event processed.
 
 The webhook explicitly does **not** forward canonical payment processing to Make.com or n8n. External automation remains an optional adapter.
 
