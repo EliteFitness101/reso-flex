@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import "./resoflex-premium.css";
 
 // Recover from stale lazy chunks after a redeploy: if a dynamic import fails
 // because the hashed chunk no longer exists, force a single hard reload.

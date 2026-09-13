@@ -1,0 +1,88 @@
+/* ResoFlex premium luxury layer for shop.resofit.fit */
+:root {
+  --resoflex-bg: #111111;
+  --resoflex-text: #F5F5F5;
+  --resoflex-blue: #0057FF;
+  --resoflex-card: #171717;
+  --resoflex-border: rgba(255,255,255,.10);
+}
+
+html { background: var(--resoflex-bg); color-scheme: dark; }
+body {
+  background: var(--resoflex-bg);
+  color: var(--resoflex-text);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-image:
+    radial-gradient(ellipse at top, rgba(0,87,255,.08), transparent 55%),
+    radial-gradient(ellipse at bottom, rgba(0,87,255,.04), transparent 55%);
+  background-attachment: fixed;
+}
+
+h1,h2,h3,h4,h5,h6,.font-display {
+  font-family: Barlow, Inter, system-ui, sans-serif;
+  letter-spacing: -.02em;
+}
+
+.card,.product-card,.collection-card {
+  background: var(--resoflex-card);
+  border: 1px solid var(--resoflex-border);
+  border-radius: 12px;
+}
+
+.button,.btn,button[type="submit"] {
+  background: var(--resoflex-blue);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  min-height: 48px;
+  transition: opacity .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.button:hover,.btn:hover,button[type="submit"]:hover {
+  transform: translateY(-1px);
+  opacity: .94;
+  box-shadow: 0 12px 32px rgba(0,87,255,.22);
+}
+
+.header-wrapper,.site-header {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(17,17,17,.82);
+}
+
+input,select,textarea {
+  background: #171717;
+  color: #F5F5F5;
+  border: 1px solid var(--resoflex-border);
+  border-radius: 8px;
+  min-height: 48px;
+}
+
+.resoflex-premium-card {
+  background: var(--resoflex-card);
+  border: 1px solid var(--resoflex-border);
+  border-radius: 12px;
+}
+.resoflex-premium-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: .75rem 1.25rem;
+  background: var(--resoflex-blue);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 700;
+  transition: opacity .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.resoflex-premium-button:hover { transform: translateY(-1px); opacity: .94; box-shadow: 0 12px 32px rgba(0,87,255,.22); }
+.resoflex-glass { background: rgba(17,17,17,.72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--resoflex-border); }
+.resoflex-blue-text { color: var(--resoflex-blue); }
+.resoflex-blue-border { border-color: rgba(0,87,255,.55); }
+
+@media (max-width: 749px) {
+  .button,.btn,button[type="submit"],.resoflex-premium-button { min-height: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
