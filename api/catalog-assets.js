@@ -23,6 +23,6 @@ export default async function handler(req, res) {
     const products = payload.products || payload.data || [];
     const paystack = (Array.isArray(products) ? products : []).filter((item) => String(item.sku || '').startsWith('PAYSTACK-')).map((item) => ({ title: item.title, priceNgn: Number(item.variant_price || 0), images: item.image_src ? [item.image_src] : [], source: 'https://paystack.shop/resoflex', sku: item.sku, handle: item.handle }));
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
-    return res.status(200).json({ source: 'ResoFlex canonical media bridge', generatedAt: new Date().toISOString(), imagekit: { verified: grouped, count: Object.keys(grouped).length, assets: assetPayload.data?.length ?? 0 }, paystack: { products: paystack, count: paystack.length }, blob: { configured: true, base: BLOB_BASE } });
+    return res.status(200).json({ source: 'ResoFlex canonical media bridge', generatedAt: new Date().toISOString(), storefront: { products: Array.isArray(products) ? products.length : 0 }, imagekit: { verified: grouped, count: Object.keys(grouped).length, assets: assetPayload.data?.length ?? 0 }, paystack: { products: paystack, count: paystack.length }, blob: { configured: true, base: BLOB_BASE } });
   } catch (error) { return res.status(502).json({ error: 'Canonical media bridge unavailable', message: error instanceof Error ? error.message : 'Unknown error' }); }
 }
