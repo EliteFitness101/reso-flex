@@ -6,7 +6,7 @@ import { track } from "@/lib/track";
 import ProductVisualFallback from "@/components/product/ProductVisualFallback";
 
 const ROLE_LABEL: Record<AssetRole, string> = { hero: "", gallery_01: "alternate view", gallery_02: "alternate view", gallery_03: "alternate view", lifestyle: "in use", detail: "detail view" };
-const FILE_NAME: Record<AssetRole, string> = { hero: "hero.png", gallery_01: "gallery-01.png", gallery_02: "gallery-02.png", gallery_03: "gallery-03.png", lifestyle: "lifestyle.png", detail: "details.png" };
+const FILE_NAME: Record<AssetRole, string> = { hero: "hero.png", gallery_01: "gallery-01.png", gallery_02: "gallery-02.png", gallery_03: "gallery-03.png", lifestyle: "lifestyle.png", detail: "detail.png" };
 const ORDER: AssetRole[] = ["hero", "gallery_01", "gallery_02", "gallery_03", "lifestyle", "detail"];
 const MEDIA_TIMEOUT_MS = 8000;
 
@@ -36,7 +36,6 @@ export const ProductHeroImage = ({ sku, name, eager, className }: { sku: string;
   return <div className={`relative aspect-[4/3] overflow-hidden bg-noir-900 ${className ?? ""}`}><ProductBackgroundVideo folder={media.folder} poster={ikUrl(hero.path, { w: 1200 })} /><div className="relative z-10 h-full w-full"><IkImage asset={hero} folder={media.folder} role="hero" alt={name} sizes="(max-width: 640px) 100vw, 640px" eager={eager} className="h-full w-full object-cover" onLoad={() => track("product_image_load", { sku, role: "hero", load_ms: Math.round(performance.now() - startedAt.current) })} /></div></div>;
 };
 
-/** Full verified product media surface. Blob is the dynamic primary source; ImageKit remains a verified fallback. */
 export default function ProductImageGrid({ sku, name }: { sku: string; name: string }) {
   const media = getVerifiedMedia(sku); const [active, setActive] = useState<AssetRole>("hero"); const imageStartedAt = useRef(performance.now()); const touchStartX = useRef<number | null>(null);
   useEffect(() => { imageStartedAt.current = performance.now(); }, [active]);
