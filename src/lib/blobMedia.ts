@@ -1,19 +1,29 @@
 /**
- * Public Vercel Blob delivery layer for product media.
+ * Public Vercel Blob delivery layer for shared assets.
  *
- * Set VITE_RESOFLEX_BLOB_PUBLIC_BASE_URL to the public Blob store base URL,
- * e.g. https://<public-blob-host>. Do not put a Blob read/write token in VITE_*.
- * The product folder is already verified by the existing media manifest.
+ * BLOB_BASE is public-only. Never expose BLOB_READ_WRITE_TOKEN in VITE_*.
+ * Paths are canonicalized from existing source/asset paths so the same Blob
+ * objects can be consumed by ResoFlex, shop.resofit.fit, Shopify feeds,
+ * ChatB2K and other connected experiences.
  */
 const BLOB_BASE = (import.meta.env.VITE_RESOFLEX_BLOB_PUBLIC_BASE_URL ?? "").replace(/\/$/, "");
 
 export const hasBlobMedia = Boolean(BLOB_BASE);
 
-export function blobAssetUrl(folder: string, filename: string): string | null {
+export function blobAssetUrl(pathname: string, filename?: string): string | null {
   if (!BLOB_BASE) return null;
-  return `${BLOB_BASE}/products/${encodeURIComponent(folder)}/${filename}`;
+
+  const raw = filename ? `${pathname}/${filename}` : pathname;
+  const normalized = raw.replace(/^\/+/, "");
+  const canonical = normalized.startsWith("imagekit/")
+    ? normalized
+    : normalized.startsWith("assets/")
+      ? `imagekit/${normalized}`
+      : `imagekit/assets/${normalized}`;
+
+  return `${BLOB_BASE}/${canonical.split("/").map(encodeURIComponent).join("/")}`;
 }
 
 export function blobVideoUrl(folder: string): string | null {
-  return blobAssetUrl(folder, "bg-hero.mp4");
+  return blobAssetUrl(`assets/products/${folder}`, "bg-hero.mp4");
 }
