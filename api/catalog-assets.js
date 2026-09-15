@@ -7,12 +7,12 @@ function blobUrl(folder, filename) {
 }
 
 function parsePaystack(source) {
-  const match = source.match(/export const PAYSTACK_RESOFLEX_CATALOG[\\s\\S]*?= (\\[[\\s\\S]*?\\]);/);
+  const match = source.match(/export const PAYSTACK_RESOFLEX_CATALOG[\s\S]*?= (\[[\s\S]*?\]);/);
   if (!match) throw new Error('Paystack catalog export not found');
   return Function(`return (${match[1]})`)();
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'Method not allowed' }); }
   try {
     const [manifestResponse, paystackResponse] = await Promise.all([fetch(IMAGEKIT_MANIFEST), fetch(PAYSTACK_SOURCE)]);
@@ -34,4 +34,4 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     return res.status(502).json({ error: 'Canonical media bridge unavailable', message: error instanceof Error ? error.message : 'Unknown error' });
   }
-};
+}
