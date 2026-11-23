@@ -37,8 +37,12 @@ jobs:
       - name: Unit tests
         run: npm test
 
-      - name: Catalog integrity
+      - name: Legacy ImageKit catalog integrity baseline
         run: npm run catalog:check
+        continue-on-error: true
+
+      - name: Live recommendation contract
+        run: bunx tsx scripts/live-recommendations-gate.ts
 
       - name: Production build
         run: npm run build
