@@ -33,7 +33,6 @@ function ProductRail({ title, items }: CardProps) {
 export function StoreDiscovery() {
   const products = IMAGEKIT_STORE_PRODUCTS;
   const featured = useMemo(() => products.filter(p => p.popular).slice(0, 8), [products]);
-  const recommended = useMemo(() => products.slice(0, 8), [products]);
   const frequentlyBought = useMemo(() => products.filter((_, i) => i % 3 !== 1).slice(0, 8), [products]);
   const recentlyBought = useMemo(() => [...products].reverse().slice(0, 8), [products]);
 
@@ -47,7 +46,6 @@ export function StoreDiscovery() {
     <>
       <div id="featured"><ProductRail title="Featured now" items={featured.length ? featured : products.slice(0, 8)} /></div>
       <ProductRail title="Frequently bought" items={frequentlyBought} />
-      <ProductRail title="Recommended for you" items={recommended} />
       <ProductRail title="Recently added" items={recentlyBought} />
       <section className="border-t border-border/40 py-10" aria-label="Product categories">
         <div className="container">

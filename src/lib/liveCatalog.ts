@@ -38,7 +38,7 @@ function toProduct(p: LiveProduct): Product {
     priceLabel: price === 0 ? "FREE" : `NGN ${price.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
     was: price,
     now: price,
-    features: [p.vendor ? `By ${p.vendor}` : "ResoFlex marketplace", p.product_type || "Wellness product", digital ? "Digital-first fulfillment" : "Physical fulfillment", p.variant_inventory_qty > 0 ? "Available now" : "Availability by enquiry"],
+    features: [p.vendor ? `By ${p.vendor}` : "ResoFlex marketplace", p.product_type || "Wellness product", digital ? "Digital-first fulfillment" : "Physical fulfillment", (digital || p.variant_inventory_qty > 0) ? "Available now" : "Availability by enquiry"],
     popular: false,
     free: price === 0,
     icon: digital ? "fa-bolt" : "fa-cube",

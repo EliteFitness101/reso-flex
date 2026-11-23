@@ -4,6 +4,7 @@
 
 const KEY = "rf_attribution_v1";
 const TRACKED_KEYS = [
+  "ref",
   "rsid",
   "utm_source",
   "utm_medium",
@@ -29,7 +30,9 @@ function readStored(): AttributionMap {
 function writeStored(map: AttributionMap) {
   try {
     sessionStorage.setItem(KEY, JSON.stringify(map));
-  } catch {}
+  } catch {
+    /* session storage can be unavailable in restricted browser contexts */
+  }
 }
 
 /** Capture params from current URL — safe to call repeatedly. */

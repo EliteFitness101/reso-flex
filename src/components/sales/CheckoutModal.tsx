@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { type Product } from "@/data/products";
 import { track } from "@/lib/track";
+import { captureAttribution } from "@/lib/attribution";
 
 type Props = {
   product: Product;
@@ -16,6 +17,7 @@ const SUPABASE_KEY = "sb_publishable_fu_Y3KQipfuomFQyd3zNtA_rG9XpOfG";
 export const CheckoutModal = ({ product, onClose }: Props) => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const requiresAddress = product.features.includes("Physical fulfillment") || product.features.includes("Hybrid fulfillment");
 
   const handleOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -27,6 +29,7 @@ export const CheckoutModal = ({ product, onClose }: Props) => {
     const email = String(fd.get("email") || "").slice(0, 255);
     const phone = String(fd.get("phone") || "").slice(0, 32);
     const address = String(fd.get("address") || "").slice(0, 255);
+    const attribution = captureAttribution();
 
     track("checkout_start", {
       sku: product.sku,
@@ -54,6 +57,16 @@ export const CheckoutModal = ({ product, onClose }: Props) => {
           phone,
           address,
           origin: window.location.origin,
+          ref: attribution.ref || null,
+          rsid: attribution.rsid || null,
+          utm_source: attribution.utm_source || null,
+          utm_medium: attribution.utm_medium || null,
+          utm_campaign: attribution.utm_campaign || null,
+          utm_term: attribution.utm_term || null,
+          utm_content: attribution.utm_content || null,
+          ttclid: attribution.ttclid || null,
+          session_id: attribution.rsid || null,
+          funnel_origin: attribution.ref === "zaphira" ? "zaphira_partner_storefront" : "resoflex_shop",
         }),
       });
 
@@ -92,7 +105,7 @@ export const CheckoutModal = ({ product, onClose }: Props) => {
           <input required name="name" placeholder="Full name" maxLength={120} className="w-full border border-border bg-noir-900/70 px-4 py-3 text-sm outline-none focus:border-gold/70" />
           <input required type="email" name="email" placeholder="Email" maxLength={255} className="w-full border border-border bg-noir-900/70 px-4 py-3 text-sm outline-none focus:border-gold/70" />
           <input required name="phone" placeholder="WhatsApp / phone" maxLength={32} className="w-full border border-border bg-noir-900/70 px-4 py-3 text-sm outline-none focus:border-gold/70" />
-          <input required name="address" placeholder="Delivery address" maxLength={255} className="w-full border border-border bg-noir-900/70 px-4 py-3 text-sm outline-none focus:border-gold/70" />
+          <input name="address" required={requiresAddress} placeholder={requiresAddress ? "Delivery address" : "Delivery address (optional)"} maxLength={255} className="w-full border border-border bg-noir-900/70 px-4 py-3 text-sm outline-none focus:border-gold/70" />
 
           {error && <div className="border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">{error}</div>}
 

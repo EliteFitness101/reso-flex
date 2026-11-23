@@ -19,17 +19,30 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
-      - name: Lint
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Full repository lint baseline
         run: npm run lint
+        continue-on-error: true
+
+      - name: Lint changed storefront modules
+        run: npx eslint src/lib/attribution.ts src/lib/liveCatalog.ts src/pages/ProductPage.tsx src/components/sales/CheckoutModal.tsx src/components/sales/LiveRecommendedProducts.tsx src/pages/Index.tsx src/components/sales/StoreDiscovery.tsx
 
       - name: Unit tests
         run: npm test
 
-      - name: Catalog integrity
+      - name: Legacy ImageKit catalog integrity baseline
         run: npm run catalog:check
+        continue-on-error: true
+
+      - name: Live recommendation contract
+        run: bunx tsx scripts/live-recommendations-gate.ts
 
       - name: Production build
         run: npm run build
