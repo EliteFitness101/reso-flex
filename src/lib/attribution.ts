@@ -4,6 +4,7 @@
 
 const KEY = "rf_attribution_v1";
 const TRACKED_KEYS = [
+  "ref",
   "rsid",
   "utm_source",
   "utm_medium",
